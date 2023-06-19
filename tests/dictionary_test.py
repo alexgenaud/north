@@ -1,9 +1,11 @@
 import unittest
 from north.dictionary import Dictionary
+from north.memory import Memory
 
 class DictionaryTestCase(unittest.TestCase):
     def setUp(self):
-        self.dictionary = Dictionary()
+        self.memory = Memory()
+        self.dictionary = Dictionary(self.memory)
 
     def test_add_word(self):
         len_dict_start = len(self.dictionary.core)

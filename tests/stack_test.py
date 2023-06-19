@@ -31,8 +31,6 @@ class TestStack(unittest.TestCase):
         self.assertFalse(self.stack.is_empty())
         self.stack.pop()
         self.assertTrue(self.stack.is_empty())
-        self.stack.pop()
-        self.assertTrue(self.stack.is_empty())
 
     def test_stack_operations(self):
         self.stack.push(10)
@@ -40,7 +38,7 @@ class TestStack(unittest.TestCase):
         self.assertEqual(self.stack.peek(), 20)
         self.assertEqual(self.stack.pop(), 20)
         self.assertEqual(self.stack.pop(), 10)
-        self.assertIsNone(self.stack.pop())
+        self.assertTrue(self.stack.is_empty())
 
 if __name__ == '__main__':
     unittest.main()

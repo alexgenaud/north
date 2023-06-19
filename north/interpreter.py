@@ -1,10 +1,12 @@
 from north.dictionary import Dictionary
 from north.stack import Stack
+from north.memory import Memory
 from north.util import isInt
 
 class Interpreter:
-    def __init__(self, dictionary=None, stack=None):
-        self.dictionary = Dictionary() if dictionary is None else dictionary
+    def __init__(self, dictionary=None, stack=None, memory=None):
+        self.memory = Memory() if memory is None else memory
+        self.dictionary = Dictionary(self.memory) if dictionary is None else dictionary
         self.stack = Stack() if stack is None else stack
         self.errors = Stack()
 

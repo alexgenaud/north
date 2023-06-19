@@ -1,4 +1,5 @@
 from north.util import isInt
+from typing import Union
 
 class Stack:
     def __init__(self, initstack=None):
@@ -10,31 +11,28 @@ class Stack:
             self.stack = []
         self.current_index = 0
 
-    def push(self, value):
-        if value is None:
-            pass
-        elif isinstance(value, str) and isInt(value):
+    def push(self, value: Union[int, str]):
+        assert isinstance(value, (int, str)), "Stack token must be str or int"
+        if isinstance(value, str) and isInt(value):
             self.stack.append(int(value))
         else:
             self.stack.append(value)
 
     def extend(self, list_value):
+        assert isinstance(list_value, list), "Extend stack with list only"
         self.stack.extend(list_value)
 
     def pop(self, index=-1):
-        if self.is_empty():
-            # TODO consider: raise ValueError("Stack empty")
-            return None
+        assert len(self.stack) > 0, "Stack must have tokens to pop"
         return self.stack.pop(index)
 
     def peek(self, index=-1):
-        if self.is_empty():
-            return None
-            # raise ValueError("Stack is empty")
+        assert len(self.stack) > 0, "Stack must have tokens to peek"
         return self.stack[index]
 
-    def sliceFrom(self, index):
-        return self.stack[index:]
+    # def sliceFrom(self, index):
+    #     assert len(self.stack) > 0, "Stack must have tokens to slice"
+    #     return self.stack[index:]
 
     def is_empty(self):
         return len(self.stack) == 0

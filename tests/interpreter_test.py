@@ -1,29 +1,28 @@
-import unittest
-import traceback
-import sys
 from io import StringIO
 from north.dictionary import Dictionary
-from north.stack import Stack
 from north.interpreter import Interpreter
-from exec_assertions import ExecAssertions
+from north.memory import Memory
+from north.stack import Stack
+import unittest
 
-class InterpreterTest(ExecAssertions, unittest.TestCase):
-    def setUp(self):
-        self.dictionary = Dictionary()
-        self.stack = Stack()
-        self.interpreter = Interpreter(self.dictionary, self.stack)
-
-    def noassertExecuteStack2(self, execStr, expectStack, message=None):
-        message = "[" + execStr +"] expect "+ str(expectStack) if message is None else message;
+class InterpreterTest(unittest.TestCase):
+    def assertExecuteStack(self, execStr, expectStack, message=None):
+        if message is None:
+            message = "execute(" + execStr +") expect stack: "+ str(expectStack)
         self.interpreter.execute(execStr)
         self.assertEqual(str(self.stack), expectStack, message)
 
-    def noassertExecutePop2(self, execStr, expectPop, message=None):
-        message = "[" + execStr +"] expect pop: "+ str(expectPop) if message is None else message;
+    def assertExecutePop(self, execStr, expectPop, message=None):
+        if message is None:
+            message = "execute(" + execStr +") expect pop: "+ str(expectPop)
         self.interpreter.execute(execStr)
         self.assertEqual(self.stack.pop(), expectPop, message)
 
-###########################################################################
+    def setUp(self):
+        self.memory = Memory()
+        self.dictionary = Dictionary(self.memory)
+        self.stack = Stack()
+        self.interpreter = Interpreter(self.dictionary, self.stack, self.memory)
 
     def test_if_else_then_example_if(self):
         self.assertExecutePop(": IS_NOT_ZERO DUP IF 7 ELSE 9 THEN ; 0 IS_NOT_ZERO", 9)
@@ -108,10 +107,9 @@ class InterpreterTest(ExecAssertions, unittest.TestCase):
         self.assertExecuteStack("0 =0", "1")
         self.assertExecuteStack("=0", "0")
         self.assertExecutePop("=0", 1)
-        self.assertExecuteStack("", "") # empty stack
-        # FIXME =0 works even when pop returns None
-        # TODO None is not infact =0 so 0 might be reasonable
-        self.assertExecutePop("=0", 0)
+        self.assertExecuteStack("", "")
+        self.assertExecutePop("0 =0", 1)
+        self.assertExecutePop("1 =0", 0)
         self.assertExecutePop("-6 =0", 0)
 
     def test_logical_less_than_zero(self):
@@ -172,7 +170,7 @@ class InterpreterTest(ExecAssertions, unittest.TestCase):
         self.assertExecutePop("7 NEG", -7)
 
     def test_define_word_neg_just_define(self):
-        self.assertExecutePop(": NEG 0 SWAP - ;", None)
+        self.assertExecuteStack(": NEG 0 SWAP - ;", "")
 
     def test_define_word_neg_push_define_neg_after(self):
         self.stack.push(5)
@@ -254,8 +252,8 @@ class InterpreterTest(ExecAssertions, unittest.TestCase):
         self.assertExecutePop("0 12 MOD", 0)
         
         # Zero divisor
-        #self.assertExecutePop("10 0 MOD", "Divide by zero error")
-        #self.assertExecutePop("0 0 MOD", "Divide by zero error")
+        # self.assertExecutePop("10 0 MOD", "Divide by zero error")
+        # self.assertExecutePop("0 0 MOD", "Divide by zero error")
 
 
 #    def test_program_is_prime(self):
