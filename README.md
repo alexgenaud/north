@@ -48,6 +48,18 @@ Ran 46 tests in 0.002s
 OK
 ```
 
+## Stream stdin and/or arguments
+
+`echo 1 2 + | python3 -m north.shell 3 + 4 + | sed s:0:5: | python3 -m north.shell "4 *"`
+
+Or perhaps more elegant with an alias or executable:
+
+```
+$ alias north='python3 -m north.shell'
+$ echo 1 2 + | north 3 + 4 + | sed s:0:5: | north "4 *"
+60
+```
+
 ## License
 
 For all the legal types out there,

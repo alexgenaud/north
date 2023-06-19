@@ -7,7 +7,7 @@ class Shell:
 
     def run(self):
         self.running = True
-        print("Welcome to North shell, the Forth from the North! (type 'quit' to quit)")
+        print("Welcome to North, the Forth from the North, interactive shell! (type 'quit' to quit)")
         while self.running:
             command = input("")
             self.execute_command(command)
@@ -23,5 +23,26 @@ class Shell:
         print("Stack:", self.interpreter.stack)
 
 if __name__ == "__main__":
-    shell = Shell()
-    shell.run()
+    import sys
+    interpreter = Interpreter()
+    if len(sys.argv) <= 1 and sys.stdin.isatty():
+        #shell = Shell()
+        #shell.run()
+        print("Welcome to North, the Forth from the North, interactive shell! (type 'quit' to quit)")
+        for line in sys.stdin:
+            line = line.strip()
+            if line == "quit":
+                break
+            interpreter.execute(line)
+            print(interpreter.stack)
+        sys.exit(0)
+    if not sys.stdin.isatty():
+        for line in sys.stdin:
+            line = line.strip()
+            interpreter.execute(line)
+    if len(sys.argv) > 1:
+        for arg in sys.argv[1:]:
+            interpreter.execute(arg)
+    print(interpreter.stack)
+    sys.exit(0)
+

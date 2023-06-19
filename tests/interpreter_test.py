@@ -74,7 +74,7 @@ class InterpreterTest(ExecAssertions, unittest.TestCase):
         self.assertExecutePop("7 5 XOR", 2)
 
     def test_logical_and(self):
-        self.assertExecuteStack("1 0 AND", "[0]")
+        self.assertExecutePop("1 0 AND", 0)
         self.assertExecutePop("1 2 AND", 0)
         self.assertExecutePop("2 2 AND", 2)
         self.assertExecutePop("27 8 AND", 8)
@@ -105,9 +105,13 @@ class InterpreterTest(ExecAssertions, unittest.TestCase):
         self.assertExecutePop("-1 -2 >", 1)
 
     def test_logical_equal_zero(self):
-        self.assertExecuteStack("0 =0", "[1]")
-        self.assertExecuteStack("=0", "[0]") # 1 from above != 0
-        self.assertExecutePop("=0", 1) # with 0 above
+        self.assertExecuteStack("0 =0", "1")
+        self.assertExecuteStack("=0", "0")
+        self.assertExecutePop("=0", 1)
+        self.assertExecuteStack("", "") # empty stack
+        # FIXME =0 works even when pop returns None
+        # TODO None is not infact =0 so 0 might be reasonable
+        self.assertExecutePop("=0", 0)
         self.assertExecutePop("-6 =0", 0)
 
     def test_logical_less_than_zero(self):
@@ -131,22 +135,22 @@ class InterpreterTest(ExecAssertions, unittest.TestCase):
         self.assertExecutePop("1 >=0", 1)
 
     def test_drop(self):
-        self.assertExecuteStack("8 6 4 DROP", "[8, 6]")
+        self.assertExecuteStack("8 6 4 DROP", "8 6")
 
     def test_dup(self):
-        self.assertExecuteStack("8 7 DUP", "[8, 7, 7]")
+        self.assertExecuteStack("8 7 DUP", "8 7 7")
 
     def test_not(self):
-        self.assertExecuteStack("8 0 NOT", "[8, -1]")
-        self.assertExecuteStack("DROP DROP 0 DROP 1 NOT", "[-2]")
+        self.assertExecuteStack("8 0 NOT", "8 -1")
+        self.assertExecuteStack("DROP DROP 0 DROP 1 NOT", "-2")
         self.assertExecutePop("256 NOT", -257)
         self.assertExecutePop("1234567890 NOT", -1234567891)
 
     def test_over(self):
-        self.assertExecuteStack("5 6 7 OVER", "[5, 6, 7, 6]")
+        self.assertExecuteStack("5 6 7 OVER", "5 6 7 6")
 
     def test_rotate(self):
-        self.assertExecuteStack("3 4 5 6 7 ROT", "[3, 4, 6, 7, 5]")
+        self.assertExecuteStack("3 4 5 6 7 ROT", "3 4 6 7 5")
 
     def test_execute_none(self):
         self.assertIsNone(self.interpreter.execute(None))
@@ -263,6 +267,19 @@ class InterpreterTest(ExecAssertions, unittest.TestCase):
 #            "      LOOP THEN THEN ; "+
 #            " 4 IS_PRIME", "[0]")
 
+    def test_redefine_primitives(self):
+        # DUP does what we expect, duplicates 5
+        self.assertExecuteStack("5 DUP", "5 5")
+
+        # create a function (SQUARE) that uses old DUP
+        # (and multiplies the value by itself)
+        # then run SQUARE popping one of two 5 from the stack
+        self.assertExecuteStack(": SQUARE DUP * ; SQUARE", "5 25")
+
+        # Redefine DUP to instead increment a copy by one
+        # self.assertExecuteStack(": DUP DUP 1 + ; DUP", "5 25 26")
+        # FIXME new DUP should use old DUP
+        # TODO default is not to recurse (although there could be a RECURSE word)
 
 if __name__ == "__main__":
     unittest.main()

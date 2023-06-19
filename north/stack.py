@@ -8,7 +8,6 @@ class Stack:
             self.stack = initstack.split()
         else:
             self.stack = []
-        #self.current_index = len(self.stack) - 1
         self.current_index = 0
 
     def push(self, value):
@@ -44,10 +43,9 @@ class Stack:
         return len(self.stack)
 
     def __str__(self):
-        return str(self.stack)
+        return ' '.join(str(item) for item in self.stack)
 
     def __iter__(self):
-        #self.current_index = len(self.stack) - 1
         self.current_index = 0
         return self
 
