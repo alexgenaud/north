@@ -12,10 +12,10 @@ if __name__ == "__main__":
                 if line.lower() == "quit":
                     sys.exit(0)
                 interpreter.execute(line)
-                print(interpreter.stack)
         except KeyboardInterrupt:
             print("\nKeyboardInterrupt: Exiting...")
             sys.exit(1)
+
     if not sys.stdin.isatty():
         for line in sys.stdin:
             line = line.strip()
@@ -25,4 +25,3 @@ if __name__ == "__main__":
             interpreter.execute(arg)
     print(interpreter.stack)
     sys.exit(0)
-

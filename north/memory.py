@@ -1,7 +1,7 @@
 class Memory:
 
     def __init__(self, size=None):
-        self.size = 32 if size is None else size
+        self.size = 42 if size is None else size
         self.memory = [0] * self.size
         self.highest_address = -1
 
@@ -25,20 +25,15 @@ class Memory:
         return address
 
     def __str__(self):
-        indent = ''
-        result = ''
-        for key, value in self.memory.items():
-            result += f"{indent}{key}: "
-            if isinstance(value, list):
-                formatted_items = [
-                        str(item) if not callable(item) else 'call'
-                        for item in value]
-                result += f"[ {', '.join(formatted_items)} ]"
-            elif isinstance(value, dict):
-                result += 'dict\n'
+        memory_str = ""
+        for address, value in enumerate(self.memory):
+            if isinstance(value, str):
+                memory_str += f"{address}: {value}\n"
+            elif isinstance(value, int):
+                memory_str += f"{address}: {value}\n"
             elif callable(value):
-                result += 'call\n'
+                memory_str += f"{address}: call\n"
             else:
-                result += str(value)
-            result += '\n'
-        return result
+                memory_str += f"{address}: {type(value).__name__}\n"
+        return memory_str
+

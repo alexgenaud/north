@@ -10,6 +10,7 @@ class Stack:
         else:
             self.stack = []
         self.current_index = 0
+        self.skip_condition = []
 
     def push(self, value: Union[int, str]):
         assert isinstance(value, (int, str)), "Stack token must be str or int"
@@ -29,10 +30,6 @@ class Stack:
     def peek(self, index=-1):
         assert len(self.stack) > 0, "Stack must have tokens to peek"
         return self.stack[index]
-
-    # def sliceFrom(self, index):
-    #     assert len(self.stack) > 0, "Stack must have tokens to slice"
-    #     return self.stack[index:]
 
     def is_empty(self):
         return len(self.stack) == 0
