@@ -24,8 +24,16 @@ class InterpreterTest(unittest.TestCase):
         self.stack = Stack()
         self.interpreter = Interpreter(self.dictionary, self.stack, self.memory)
 
+    def test_if_simple(self):
+        self.assertExecutePop("1 IF 2 ELSE 3 THEN", 2)
+        self.assertExecuteStack("1 IF ELSE 3 THEN", "")
+        self.assertExecutePop("1 IF 2 THEN", 2)
+        self.assertExecutePop("-1 IF 2 ELSE 3 THEN", 2)
+        self.assertExecutePop("0 IF ELSE 3 THEN", 3)
+        self.assertExecuteStack("2 IF 2 THEN", "2")
+
     def test_if_nested(self):
-        self.assertExecuteStack(": IS_SIX DUP <0 IF 0 ELSE DUP >0 IF 6 = IF 1 ELSE 0 THEN ELSE DROP 0 THEN THEN ;", "")
+        self.assertExecuteStack(": IS_SIX DUP <0 IF DROP 0 ELSE DUP >0 IF 6 = IF 1 ELSE 0 THEN ELSE DROP 0 THEN THEN ;", "")
         self.assertExecutePop("-6 IS_SIX", 0)
         self.assertExecutePop("0 IS_SIX", 0)
         self.assertExecutePop("1 IS_SIX", 0)
@@ -48,7 +56,7 @@ class InterpreterTest(unittest.TestCase):
         self.assertExecutePop("10 IS_TEN", 3)
         self.assertExecutePop("11 IS_TEN", 4)
 
-    def test_if_absolute_no_if(self):
+    def test_if_absolute_else_only(self):
         self.assertExecutePop(": E_ABS DUP >=0 IF ELSE 0 SWAP - THEN ; 6 E_ABS", 6)
         self.assertExecutePop("-1 E_ABS", 1)
         self.assertExecutePop("0 E_ABS", 0)
@@ -243,19 +251,19 @@ class InterpreterTest(unittest.TestCase):
 
         self.assertExecutePop("10 -5 MOD", 0)
         self.assertExecutePop("13 -12 MOD", 1)
-        
+
         # Negative dividend
         self.assertExecutePop("-10 5 MOD", 0)
         self.assertExecutePop("-13 12 MOD", 11)
-        
+
         # Negative divisor
         self.assertExecutePop("-10 -5 MOD", 0)
         self.assertExecutePop("-13 -12 MOD", 11)
-        
+
         # Zero dividend
         self.assertExecutePop("0 5 MOD", 0)
         self.assertExecutePop("0 12 MOD", 0)
-        
+
         # Zero divisor
         # self.assertExecutePop("10 0 MOD", "Divide by zero error")
         # self.assertExecutePop("0 0 MOD", "Divide by zero error")
@@ -265,7 +273,6 @@ class InterpreterTest(unittest.TestCase):
         self.assertExecuteStack(": X X 100 + ; 0 X", "8 107")
         self.assertExecuteStack(": X X  10 + ; 0 X", "8 107 117")
         self.assertExecuteStack(": X DROP    ; X",      "8 107")
-
 
 #    def test_program_is_prime(self):
 #        self.assertExecuteStack(
@@ -281,7 +288,6 @@ class InterpreterTest(unittest.TestCase):
         self.assertExecuteStack(": OLD_DUP DUP ; 4 OLD_DUP", "5 5 4 4")
         self.assertExecuteStack(": DUP DUP * ; 13 DUP", "5 5 4 4 169")
         self.assertExecuteStack("1 OLD_DUP", "5 5 4 4 169 1 1")
-
 
     def test_new_word_of_primitive(self):
         self.assertExecuteStack("5 DUP", "5 5")

@@ -1,5 +1,6 @@
 from north.util import isInt
-from typing import Union
+from north.mode import Mode
+
 
 class Stack:
     def __init__(self, initstack=None):
@@ -11,8 +12,26 @@ class Stack:
             self.stack = []
         self.current_index = 0
         self.skip_condition = []
+        self.mode = [Mode.EXECUTE]
+        self.compile_definition = None  # A list when in COMPILE mode
 
-    def push(self, value: Union[int, str]):
+    def modePeek(self, index=-1):
+        assert len(self.mode) > 0, "Mode stack must have enums to peek"
+        return self.mode[index]
+
+    def modePop(self, index=-1):
+        assert len(self.mode) > 0, "Mode stack must have enums to peek"
+        return self.mode.pop(index)
+
+    def modePush(self, mode):
+        assert isinstance(mode, Mode), "Mode stack must only contain Mode enums"
+        self.mode.append(mode)
+
+    def modeToggle(self, next):
+        assert isinstance(next, Mode), "Must set transition mode"
+        self.mode[-1] = next
+
+    def push(self, value):
         assert isinstance(value, (int, str)), "Stack token must be str or int"
         if isinstance(value, str) and isInt(value):
             self.stack.append(int(value))
@@ -46,8 +65,8 @@ class Stack:
 
     def __next__(self):
         if self.current_index < len(self.stack):
-             value = self.stack[self.current_index]
-             self.current_index += 1
-             return value
+            value = self.stack[self.current_index]
+            self.current_index += 1
+            return value
         else:
             raise StopIteration

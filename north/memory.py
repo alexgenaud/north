@@ -1,14 +1,12 @@
 class Memory:
-
     def __init__(self, size=None):
         self.size = 42 if size is None else size
         self.memory = [0] * self.size
         self.highest_address = -1
 
     def read(self, address):
-        assert isinstance(address, int), "Memory address must be int"
-        assert address >= 0, "Illegal memory address less than zero: {}".format(address)
-        assert address < len(self.memory), "Memory address out of bounds: {}".format(address)
+        assert isinstance(address, int) and 0 <= address < len(self.memory), \
+            f"Memory address must be a valid integer within bounds: {address}"
         return self.memory[address]
 
     def write(self, value, address=None):
@@ -16,11 +14,8 @@ class Memory:
             address = self.highest_address = self.highest_address + 1
         elif address > self.highest_address:
             self.highest_address = address
-
-        assert isinstance(address, int), "Memory address must be int"
-        assert address >= 0, "Illegal memory address less than zero: {}".format(address)
-        assert address < len(self.memory), "Memory address out of bounds: {}".format(address)
-
+        assert isinstance(address, int) and 0 <= address < len(self.memory), \
+            f"Memory address must be a valid integer within bounds: {address}"
         self.memory[address] = value
         return address
 
@@ -36,4 +31,3 @@ class Memory:
             else:
                 memory_str += f"{address}: {type(value).__name__}\n"
         return memory_str
-

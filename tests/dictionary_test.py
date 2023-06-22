@@ -2,6 +2,7 @@ import unittest
 from north.dictionary import Dictionary
 from north.memory import Memory
 
+
 class DictionaryTestCase(unittest.TestCase):
     def setUp(self):
         self.memory = Memory()
