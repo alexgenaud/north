@@ -1,20 +1,20 @@
-from io import StringIO
 from north.dictionary import Dictionary
 from north.interpreter import Interpreter
 from north.memory import Memory
 from north.stack import Stack
 import unittest
 
+
 class InterpreterTest(unittest.TestCase):
     def assertExecuteStack(self, execStr, expectStack, message=None):
         if message is None:
-            message = "execute(" + execStr +") expect stack: "+ str(expectStack)
+            message = "execute(" + execStr + ") expect stack: " + str(expectStack)
         self.interpreter.execute(execStr)
         self.assertEqual(str(self.stack), expectStack, message)
 
     def assertExecutePop(self, execStr, expectPop, message=None):
         if message is None:
-            message = "execute(" + execStr +") expect pop: "+ str(expectPop)
+            message = "execute(" + execStr + ") expect pop: " + str(expectPop)
         self.interpreter.execute(execStr)
         self.assertEqual(self.stack.pop(), expectPop, message)
 
@@ -240,11 +240,6 @@ class InterpreterTest(unittest.TestCase):
         self.stack.push(5)
         self.assertExecutePop("*", 15)
 
-    def test_interpreter_multiply(self):
-        self.stack.push(3)
-        self.stack.push(5)
-        self.assertExecutePop("*", 15)
-
     def test_mod(self):
         self.assertExecutePop("10 5 MOD", 0)
         self.assertExecutePop("13 12 MOD", 1)
@@ -292,6 +287,7 @@ class InterpreterTest(unittest.TestCase):
     def test_new_word_of_primitive(self):
         self.assertExecuteStack("5 DUP", "5 5")
         self.assertExecuteStack(": SQUARE DUP * ; SQUARE", "5 25")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,7 @@
 import unittest
 from north.stack import Stack
 
+
 class TestStack(unittest.TestCase):
     def setUp(self):
         self.stack = Stack()
@@ -39,6 +40,7 @@ class TestStack(unittest.TestCase):
         self.assertEqual(self.stack.pop(), 20)
         self.assertEqual(self.stack.pop(), 10)
         self.assertTrue(self.stack.is_empty())
+
 
 if __name__ == '__main__':
     unittest.main()

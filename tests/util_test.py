@@ -1,6 +1,7 @@
 import unittest
 from north.util import isInt
 
+
 class TestUnil(unittest.TestCase):
     def test_util_isInt(self):
         self.assertTrue(isInt(-7))
@@ -22,6 +23,3 @@ class TestUnil(unittest.TestCase):
         self.assertFalse(isInt("7."))
 
         self.assertEqual(0, 0)
-
-#if __name__ == '__main__':
-#    unittest.main()

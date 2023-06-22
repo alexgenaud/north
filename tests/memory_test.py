@@ -1,6 +1,7 @@
 import unittest
 from north.memory import Memory
 
+
 class TestMemory(unittest.TestCase):
     def setUp(self):
         self.size = 4
@@ -32,6 +33,7 @@ class TestMemory(unittest.TestCase):
     #             lambda: self.memory.read(self.size))
     #     self.assertRaises(IndexError,
     #             lambda: self.memory.read(-1))
+
 
 if __name__ == '__main__':
     unittest.main()
