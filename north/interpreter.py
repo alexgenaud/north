@@ -7,11 +7,25 @@ from north.util import isInt
 
 class Interpreter:
     def __init__(self, dictionary=None, stack=None, memory=None):
+        """
+        Initializes the Interpreter.
+
+        Args:
+            dictionary (Dictionary, optional): The dictionary to use. Defaults to None.
+            stack (Stack, optional): The stack to use. Defaults to None.
+            memory (Memory, optional): The memory to use. Defaults to None.
+        """
         self.memory = Memory() if memory is None else memory
         self.dictionary = Dictionary(self.memory) if dictionary is None else dictionary
         self.stack = Stack() if stack is None else stack
 
     def execute_colon_word(self, address_list):
+        """
+        Executes a colon word definition.
+
+        Args:
+            address_list (list): The list of addresses representing the colon word definition.
+        """
         MEM_0_IF = 0
         MEM_1_ELSE = 1
         MEM_2_THEN = 2
@@ -31,6 +45,12 @@ class Interpreter:
                 self.execute_colon_word(value)
 
     def execute(self, string_input):
+        """
+        Executes the given string input.
+
+        Args:
+            string_input (str): The string input to execute.
+        """
         if not string_input or not string_input.strip():
             return
         for token in string_input.split():
