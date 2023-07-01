@@ -10,19 +10,20 @@ class InterpreterTest(unittest.TestCase):
         if message is None:
             message = "execute(" + execStr + ") expect stack: " + str(expectStack)
         self.interpreter.execute(execStr)
-        self.assertEqual(str(self.stack), expectStack, message)
+        self.assertEqual(str(self.interpreter.stack), expectStack, message)
 
     def assertExecutePop(self, execStr, expectPop, message=None):
         if message is None:
             message = "execute(" + execStr + ") expect pop: " + str(expectPop)
         self.interpreter.execute(execStr)
-        self.assertEqual(self.stack.pop(), expectPop, message)
+        self.assertEqual(self.interpreter.stack.pop(), expectPop, message)
 
     def setUp(self):
-        self.memory = Memory()
-        self.dictionary = Dictionary(self.memory)
-        self.stack = Stack()
-        self.interpreter = Interpreter(self.dictionary, self.stack, self.memory)
+        # memory_0 = Memory(48)
+        # dictionary_0 = Dictionary(memory_0)
+        # stack_0 = Stack()
+        # self.interpreter = Interpreter(dictionary_0, stack_0, memory_0)
+        self.interpreter = Interpreter()
 
     def test_if_simple(self):
         self.assertExecutePop("1 IF 2 ELSE 3 THEN", 2)
@@ -179,17 +180,13 @@ class InterpreterTest(unittest.TestCase):
     #     self.assertIsNone(self.interpreter.execute("BOGUS"))
 
     def test_define_word_neg_define_and_run_7_neg(self):
-        self.interpreter.execute(": NEG 0 SWAP - ;")
-        self.assertExecutePop("7 NEG", -7)
+        self.assertExecutePop(": NEG 0 SWAP - ; 7 NEG", -7)
 
     def test_define_word_neg_just_define(self):
         self.assertExecuteStack(": NEG 0 SWAP - ;", "")
 
     def test_define_word_neg_push_define_neg_after(self):
-        self.stack.push(5)
-        self.interpreter.execute(": NEG 0 SWAP - ;")
-        self.interpreter.execute("NEG")
-        self.assertEqual(self.interpreter.stack.pop(), -5)
+        self.assertExecutePop("5 : NEG 0 SWAP - ; NEG", -5)
 
     def test_define_word_neg_prior_one_command(self):
         self.assertExecutePop("3 : NEG 0 SWAP - ; NEG", -3)
@@ -198,22 +195,16 @@ class InterpreterTest(unittest.TestCase):
         self.assertExecutePop("1", 1)
 
     def test_interpreter_swap_one_line_7_9_swap(self):
-        self.assertExecutePop("7 9 SWAP", 7)
-        self.assertEqual(self.stack.pop(), 9)
+        self.assertExecuteStack("7 9 SWAP", "9 7")
 
     def test_interpreter_swap_push2_execute(self):
-        self.stack.push(5)
-        self.stack.push(8)
-        self.assertExecutePop("SWAP", 5)
-        self.assertEqual(self.stack.pop(), 8)
+        self.assertExecuteStack("5 8 SWAP", "8 5")
 
     def test_interpreter_add_one_line(self):
         self.assertExecutePop("19 3 4 +", 7)
 
     def test_interpreter_add_push2_execute_plus(self):
-        self.stack.push(5)
-        self.stack.push(8)
-        self.assertExecutePop("+", 13)
+        self.assertExecutePop("5 8 +", 13)
 
     def test_interpreter_subtract_simple(self):
         self.assertExecutePop("9 6 -", 3)
@@ -223,9 +214,7 @@ class InterpreterTest(unittest.TestCase):
         self.assertExecutePop("7 11 -", -4)
 
     def test_interpreter_subtract_push2_execute_subtract(self):
-        self.stack.push(8)
-        self.stack.push(5)
-        self.assertExecutePop("-", 3)
+        self.assertExecutePop("9 6 -", 3)
 
     def test_interpreter_divide_int(self):
         self.assertExecutePop("6 7 /", 0)
@@ -236,9 +225,7 @@ class InterpreterTest(unittest.TestCase):
         self.assertExecutePop("6 1 /", 6)
 
     def test_interpreter_multiply(self):
-        self.stack.push(3)
-        self.stack.push(5)
-        self.assertExecutePop("*", 15)
+        self.assertExecutePop("3 5 *", 15)
 
     def test_mod(self):
         self.assertExecutePop("10 5 MOD", 0)
@@ -269,14 +256,15 @@ class InterpreterTest(unittest.TestCase):
         self.assertExecuteStack(": X X  10 + ; 0 X", "8 107 117")
         self.assertExecuteStack(": X DROP    ; X",      "8 107")
 
-#    def test_program_is_prime(self):
-#        self.assertExecuteStack(
-#            ": IS_PRIME DUP 2 <= IF DROP 0 ELSE"+
-#            "    DUP 3 <= IF DROP 1 ELSE"+
-#            "      DUP 2 1 + 3 DO"+
-#            "        DUP I MOD 0 = IF DROP 0 EXIT THEN"+
-#            "      LOOP THEN THEN ; "+
-#            " 4 IS_PRIME", "[0]")
+    # def test_program_is_prime(self):
+    #     self.assertExecuteStack("""
+    #         : IS_PRIME DUP 2 <= IF DROP 0 ELSE
+    #            DUP 3 <= IF DROP 1 ELSE
+    #              DUP 2 1 + 3 DO
+    #                DUP I MOD 0 = IF DROP 0 EXIT THEN
+    #              LOOP THEN THEN ;
+    #         4 IS_PRIME
+    #         ""","[0]")
 
     def test_redefine_dup_to_square(self):
         self.assertExecuteStack("5 DUP", "5 5")
