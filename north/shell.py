@@ -19,9 +19,9 @@ if __name__ == "__main__":
     In interactive shell mode, the user can enter Forth commands line by line.
     Entering 'quit' will exit the shell.
 
-    When a file is provided as an argument, it executes the Forth commands from the file.
-
     When multiple commands are provided as arguments, it executes them sequentially.
+
+    # TODO When a file is provided as an argument, it executes the Forth commands from the file.
 
     After executing the commands, it prints the current state of the stack.
     """

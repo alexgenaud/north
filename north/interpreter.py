@@ -25,6 +25,8 @@ class Interpreter:
 
         Args:
             address_list (list): The list of addresses representing the colon word definition.
+                                 The addresses point to int, callable, or colon-words
+                                 (which are further lists of addresses)
         """
         MEM_0_IF = 0
         MEM_1_ELSE = 1
@@ -45,12 +47,6 @@ class Interpreter:
                 self.execute_colon_word(value)
 
     def execute(self, string_input):
-        """
-        Executes the given string input.
-
-        Args:
-            string_input (str): The string input to execute.
-        """
         if not string_input or not string_input.strip():
             return
         for token in string_input.split():
