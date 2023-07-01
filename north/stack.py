@@ -11,7 +11,6 @@ class Stack:
         else:
             self.stack = []
         self.current_index = 0
-        self.skip_condition = []
         self.mode = [Mode.EXECUTE]
         self.compile_definition = None  # A list when in COMPILE mode
 
