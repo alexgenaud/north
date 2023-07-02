@@ -18,7 +18,8 @@ to finish (`quit`):
 $ sh run.sh
 Welcome to North shell, the Forth from the North! (type 'quit' to quit)
 1 2 +
-Stack: [3]
+PS
+3
 quit
 ```
 

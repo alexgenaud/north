@@ -51,35 +51,47 @@ WebAssembly, pointers to an array in memory).
 
 ## North 
 
-I intend to write a reference standard North by converting
-to several languages and environments. Validation only requires
-that the same FORTH tests pass. Though the data structures and implementations should rhyme.
+I intend to write a reference standard North by implementing
+the same concepts, words, structures in several languages and environments.
+Validation only requires that the same FORTH tests pass.
+Though the data structures and implementations should rhyme.
 We might as well optimize for each given target language and environment.
 I would like North to run optimally in raw vanilla WASM,
 which will then likely influence
 all other implementations (in high-level languages and virtual machines).
 
-## Python
+## Run the Python implementation from shell
 
-### Prerequisites
-
-I've only run this from Ubuntu bash (good luck elsewhere).
+Tested in Ubuntu Bash and Mac Zsh.
 Assumes python3 is installed (and so named, try `which python3`).
-Will soon be testing on Mac and with additional implementation languages.
-
-### Run the Python forth from the North shell
-
-Example shell from start (`sh run.sh`)
-to reverse polish addition (`1 2 +`)
-to finish (`quit`):
+$PROJECT is a location (for example /Users/anatta/Code/).
+Added to ~/.zshrc :
 
 ```
-$ sh run.sh
+if [[ -d "${PATH_TO_NORTH_PROJECT}/Python" ]]; then
+    export PYTHONPATH="$PYTHONPATH:${PATH_TO_NORTH_PROJECT}/Python"
+fi
+alias north='/opt/homebrew/bin/python3 -m north.shell'
+```
+
+Assuming python and PROJECT exist with proper paths, then the following interactive shell should work:
+
+```
+$ north
 Welcome to North shell, the Forth from the North! (type 'quit' to quit)
 1 2 +
-Stack: [3]
+PS
+3
 quit
 ```
+
+And for non-interactively:
+
+```
+$ echo "1 2 + " | north 10 +
+13
+```
+
 
 ### Run all tests (by example)
 
