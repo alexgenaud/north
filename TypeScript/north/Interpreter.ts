@@ -4,6 +4,9 @@ import Memory from '../north/Memory';
 import Stack from '../north/Stack';
 
 
+const CONDITIONAL_WORDS_IN_MEMORY = [0 /* IF */, 1 /* ELSE */, 2 /* THEN */];
+const CONDITIONAL_WORDS = ['IF', 'ELSE', 'THEN'];
+const CONDITIONAL_IGNORE_MODES = [Mode.IGNORE, Mode.BLOCK];
 export default class Interpreter {
     memory: Memory;
     dictionary: Dictionary;
@@ -24,13 +27,10 @@ this.stack = stack ? stack : new Stack();
 */
 
     execute_colon_word(address_list: number[]): void {
-        const MEM_0_IF = 0;
-        const MEM_1_ELSE = 1;
-        const MEM_2_THEN = 2;
         for (const address of address_list) {
             const mode: Mode = this.stack.modePeek();
-            if ([Mode.IGNORE, Mode.BLOCK].includes(mode) &&
-                    ![MEM_0_IF, MEM_1_ELSE, MEM_2_THEN].includes(address)) {
+            if (CONDITIONAL_IGNORE_MODES.includes(mode) &&
+                    !CONDITIONAL_WORDS_IN_MEMORY.includes(address)) {
                 continue;
             }
 
@@ -55,9 +55,10 @@ this.stack = stack ? stack : new Stack();
         const tokens = string_input.trim().split(/\s+/);
         for (const token of tokens) {
             const mode: Mode = this.stack.modePeek();
-            if (mode === Mode.EXECUTE || (mode=== Mode.COMPILE && token === ';') ||
-                    ([Mode.IGNORE, Mode.BLOCK].includes(mode) &&
-                        ['IF', 'ELSE', 'THEN'].includes(token))) {
+            if (mode === Mode.EXECUTE ||
+                    (mode=== Mode.COMPILE && token === ';') ||
+                    (CONDITIONAL_IGNORE_MODES.includes(mode) && CONDITIONAL_WORDS.includes(token))
+            ) {
                 const action = this.dictionary.getAction(token);
                 assert(
                     Array.isArray(action) || isInt(token) || typeof action === 'function',
@@ -74,7 +75,7 @@ this.stack = stack ? stack : new Stack();
                 }
             } else if (mode === Mode.COMPILE) {
                 this.stack.compile_definition!.push(token);
-            } else if (mode === Mode.IGNORE) {
+            } else if (CONDITIONAL_IGNORE_MODES.includes(mode)) {
                 continue;
             } else {
                 assert(
