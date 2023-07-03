@@ -75,26 +75,22 @@ export default class Dictionary {
     }
 
     private mod(stack: Stack): void {
-        const d = stack.pop() as number;
+        let d = stack.pop() as number;
         assert( typeof d === 'number' && isInt(d) && d !== 0,
             'Modulo divisor must be non-zero number. Was ${d}');
-        const absD = d >= 0 ? d : -d;
+        if (d < 0) d = -d;
 
         let n = stack.pop() as number;
         assert( typeof n === 'number' && isInt(n),
             'Modulo numerator must be a number. Was ${n}');
+        if (n < 0) n += d * n * (-1);
 
-        while (n < -10000000000) n += absD * 10000000000;
-        while (n < -100000) n += absD * 100000;
-        while (n < 0) n += absD * 100;
-
-        stack.push( (n % absD) + 0 ); // -0 is possible ! :o
+        stack.push( (n % d) + 0 ); // -0 is possible ! :o
     }
 
     private compileStart(stack: Stack): void {
-        if (stack.modePeek() !== Mode.EXECUTE || stack.compile_definition !== null) {
-            throw new Error('Start compilation from EXECUTE mode with no definition list');
-        }
+        assert(stack.modePeek() === Mode.EXECUTE && stack.compile_definition === null,
+            'Start compilation from EXECUTE mode with no definition list');
 
         stack.modePush(Mode.COMPILE);
         stack.compile_definition = [];
@@ -133,7 +129,7 @@ export default class Dictionary {
                     addressList.push(...action); // INLINE
                 }
             }
-            const address = this.addWord(wordName as string, addressList);
+            this.addWord(wordName as string, addressList); // returns address, ignored
             stack.compile_definition = null;
             stack.modePop();
             if (stack.modePeek() !== Mode.EXECUTE) {
