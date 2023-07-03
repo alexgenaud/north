@@ -44,6 +44,8 @@ this.stack = stack ? stack : new Stack();
                 this.stack.push(value);
             } else if (Array.isArray(value)) {
                 this.execute_colon_word(value);
+            } else {
+                throw new Error(`Unknown type: ${ typeof(value) } of value: ${value}`);
             }
         }
     }
@@ -71,17 +73,14 @@ this.stack = stack ? stack : new Stack();
                 } else if (isInt(token)) {
                     this.stack.push(parseInt(token, 10));
                 } else {
-                    assert(false, "Unexpected token: " + token +" or type of action: " + action);
+                    throw new Error("Unexpected token: ${token} or type of action: ${action}");
                 }
             } else if (mode === Mode.COMPILE) {
                 this.stack.compile_definition!.push(token);
             } else if (CONDITIONAL_IGNORE_MODES.includes(mode)) {
                 continue;
             } else {
-                assert(
-                    false,
-                    `Unknown mode state: ${mode} all mode stack: ${this.stack.mode.toString()}`
-                );
+                throw new Error(`Unknown mode state: ${mode} all mode stack: ${this.stack.mode.toString()}`);
             }
         }
     }
