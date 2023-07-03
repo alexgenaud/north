@@ -8,7 +8,7 @@ export default class Memory {
     highestAddress: number;
 
     constructor(size?: number) {
-        this.size = size === undefined ? 42 : size;
+        this.size = size === undefined ? 55 : size;
         this.memory = new Array(this.size).fill(0);
         this.highestAddress = -1;
     }

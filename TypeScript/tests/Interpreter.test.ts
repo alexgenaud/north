@@ -336,5 +336,27 @@ describe('Interpreter', () => {
         assertExecuteStack(": SQUARE DUP * ; SQUARE", "5 25")
     });
 
+    test('new_constant', () => {
+        assertExecutePop("5 CONST five 15 five /", 3)
+        assertExecuteStack("5 CONST five 314 CONST Pi100 35 five / Pi100 100 /", "7 3")
+        assertExecutePop("* 1 + 100 * Pi100 /", 7); // 22 / 3.14 > 7
+    });
+
+    test('new_constant_days_julian_cal_century', () => {
+        assertExecutePop("36525 CONST DAYS_JULI_CENT 365 100 * 100 4 / + DAYS_JULI_CENT =", 1)
+        assertExecutePop("36522 CONST DAYS_GREG_CENT DAYS_JULI_CENT DAYS_GREG_CENT -", 3)
+    });
+
+    test('new_variable', () => {
+        assertExecutePop("VAR six six @", 0); // 0 unset value
+        assertExecutePop("7 six ! six @", 7);
+        assertExecuteStack("six @ 1 - six ! six @", "6");
+    });
+
+    test('new_var_meton_example', () => {
+        // VAR meton addressA-> 0, addressB->B, "meton"->addressB
+        assertExecutePop("VAR meton 235 meton ! meton @", 235); // 0 unset value
+    });
+
 });
 

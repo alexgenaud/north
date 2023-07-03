@@ -4,7 +4,7 @@ import Memory from '../north/Memory';
 import Stack from '../north/Stack';
 
 
-const CONDITIONAL_WORDS_IN_MEMORY = [0 /* IF */, 1 /* ELSE */, 2 /* THEN */];
+const CONDITIONAL_WORDS_IN_MEMORY = [3, 4, 5];  /* IF , ELSE , THEN */
 const CONDITIONAL_WORDS = ['IF', 'ELSE', 'THEN'];
 const CONDITIONAL_IGNORE_MODES = [Mode.IGNORE, Mode.BLOCK];
 export default class Interpreter {
@@ -62,21 +62,27 @@ this.stack = stack ? stack : new Stack();
                     (CONDITIONAL_IGNORE_MODES.includes(mode) && CONDITIONAL_WORDS.includes(token))
             ) {
                 const action = this.dictionary.getAction(token);
-                assert(
-                    Array.isArray(action) || isInt(token) || typeof action === 'function',
-                    'Tokens are either callable code word, list colon word, or number'
-                );
                 if (typeof action === 'function') {
                     action(this.stack);
                 } else if (Array.isArray(action)) {
                     this.execute_colon_word(action);
+                } else if (action != null) {
+                    this.stack.push(action);
                 } else if (isInt(token)) {
                     this.stack.push(parseInt(token, 10));
+                } else if (typeof token === 'string') {
+                    this.stack.push(token);
                 } else {
                     throw new Error("Unexpected token: ${token} or type of action: ${action}");
                 }
             } else if (mode === Mode.COMPILE) {
                 this.stack.compile_definition!.push(token);
+            } else if (mode === Mode.CONSTANT) {
+                this.stack.push(token);
+                this.dictionary.constInitWord(this.stack)
+            } else if (mode === Mode.VARIABLE) {
+                this.stack.push(token);
+                this.dictionary.varInitWord(this.stack)
             } else if (CONDITIONAL_IGNORE_MODES.includes(mode)) {
                 continue;
             } else {

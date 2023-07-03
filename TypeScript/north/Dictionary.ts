@@ -96,7 +96,7 @@ export default class Dictionary {
         stack.compile_definition = [];
     }
 
-    private compileEndClosure(dictionary: Dictionary): (stack: Stack) => void {
+    private compileEnd(dictionary: Dictionary): (stack: Stack) => void {
         const getWordAddress = dictionary.getWordAddress.bind(dictionary);
         return (stack: Stack) => {
             if (stack.modePeek() !== Mode.COMPILE || !Array.isArray(stack.compile_definition)) {
@@ -165,13 +165,82 @@ export default class Dictionary {
         stack.modePop(); // if EXECUTE else IGNORE else EXECUTE
     }
 
+    // 220 CONSTANT LIMIT
+    // The word LIMIT returns its value not its address
+    private constInitMode(stack: Stack): void {
+        assert(stack.modePeek() === Mode.EXECUTE, "constInit expects to be in EXECUTE Mode. But was: ${stack.modePeek()}");
+        stack.modeToggle(Mode.CONSTANT);
+    }
+
+    public constInitWord(stack: Stack): void {
+        assert(stack.modePeek() === Mode.CONSTANT, "constInit expects to be in CONSTANT Mode. But was: ${stack.modePeek()}");
+        assert(stack.length > 1, "stack must have at least two elements to pop. Has only ${stack.length}");
+        this.addWord(stack.pop(), stack.pop()); // name, early value
+        stack.modeToggle(Mode.EXECUTE);
+    }
+
+    // VAR myVar
+    private varInitMode(stack: Stack): void {
+        assert(stack.modePeek() === Mode.EXECUTE, "varInit expects to be in EXECUTE Mode. But was: ${stack.modePeek()}");
+        stack.modeToggle(Mode.VARIABLE);
+    }
+
+    public varInitWord(stack: Stack): void {
+        assert(stack.modePeek() === Mode.VARIABLE, "varInit expects to be in VARIABLE Mode. But was: ${stack.modePeek()}");
+        const addressOfValue = this.memory.write(0);
+        this.addWord(stack.pop(), addressOfValue);
+        stack.modeToggle(Mode.EXECUTE);
+    }
+
+    // ! takes the address of the var and the value to be stored
+    // 42 myVar ! (sets myVar = 42)
+    private varSetValAtAddress(dictionary: Dictionary): (stack: Stack) => void {
+        const getWordAddress = dictionary.getWordAddress.bind(dictionary);
+        return (stack: Stack) => {
+            assert(stack.modePeek() === Mode.EXECUTE, "varSetValAtAddress expects to be in EXECUTE Mode. But was: ${stack.modePeek()}");
+            assert(stack.length > 1, "stack must have at least two elements to pop. Has only ${stack.length}");
+            const addressOfVar = stack.pop();
+            const value = stack.pop();
+            if (addressOfVar == null) { // == or undefined double==equal
+                throw new Error("Unexpected address: ${addressOfVar} of variable: ${varName} with value: ${value}");
+            }
+            this.memory.write(value, addressOfVar);
+        }
+    }
+
+    // @ retrieves the value of the variable
+    // myVar @ (returns 42 on the stack)
+    private varGetValAtAddress(dictionary: Dictionary): (stack: Stack) => void {
+        const getWordAddress = dictionary.getWordAddress.bind(dictionary);
+        return (stack: Stack) => {
+            assert(stack.modePeek() === Mode.EXECUTE, "varSetValAtAddress expects to be in EXECUTE Mode. But was: ${stack.modePeek()}");
+            assert(stack.length > 0, "stack must have at least one element to pop. Has only ${stack.length}");
+            const addressOfVar = stack.pop();
+            if (addressOfVar == null) { // double== or undefined
+                throw new Error("Unexpected address: ${addressOfVar}");
+            }
+            const value = this.memory.read(addressOfVar);
+            if (typeof value !== 'number') {
+                throw new Error("Unexpected type: ${(value typeof)} of value: ${value} of variable: ${varName} at address: ${addressOfVar}")
+            }
+            stack.push(value);
+        }
+    }
+
     private loadCoreWords(): void {
+        // 0 no pops
+        for (let i=0; i<=2; i++) this.addWord(''+i, i);
+
         // 1 pop
         this.addWord('IF', this.conditionIf);
         this.addWord('ELSE', this.conditionElse);
         this.addWord('THEN', this.conditionThen);
         this.addWord(':', this.compileStart);
-        this.addWord(';', this.compileEndClosure(this) );
+        this.addWord(';', this.compileEnd(this) );
+        this.addWord('CONST', this.constInitMode);
+        this.addWord('VAR', this.varInitMode);
+        this.addWord('!', this.varSetValAtAddress(this));
+        this.addWord('@', this.varGetValAtAddress(this));
         this.addWord('DROP', (stack: Stack) => stack.pop());
         this.addWord('DUP', (stack: Stack) => stack.push(stack.peek()));
         this.addWord('NOT', (stack: Stack) => stack.push(~stack.pop()));
