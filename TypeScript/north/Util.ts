@@ -2,9 +2,10 @@ export enum Mode {
     EXECUTE = 1,
     COMPILE = 2,
     IGNORE = 3,  // can be toggled with EXECUTE in same layer
-    BLOCK = 4,  // if parent is IGNORED then next layers are blocked
+    BLOCK = 4,  // if parent is IGNORED then child layers are blocked
     VARIABLE = 5,  // set variable name with next token
     CONSTANT = 6,  // set constant name with next token, value from earlier
+  // maybe need COMMENTS
 }
 
 export function isInt(token: any): boolean {

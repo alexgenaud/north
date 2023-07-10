@@ -1,8 +1,8 @@
 import { isInt, Mode, assert } from '../north/Util';
 import Memory from '../north/Memory'; // Assuming you have a Memory class implementation
 import Stack from '../north/Stack'; // Assuming you have a Memory class implementation
+import Data from '../north/Data'; // Assuming you have a Memory class implementation
 
-export type Action = ((stack: Stack) => void) | number | number[];
 
 export default class Dictionary {
     private core: { [word: string]: number[] };
@@ -14,25 +14,61 @@ export default class Dictionary {
         this.loadCoreWords();
     }
 
-    public addWord(word: string, action: Action): number {
-        if (!(typeof word === 'string' && word.length > 0)) {
-            throw new Error('Dictionary word must be a non-empty string');
-        } else if (!(typeof action === 'number' || Array.isArray(action) ||
-                     typeof action === 'function')) {
-            throw new Error('Dictionary action must be a number, an array, or a function');
-        }
+    public addWordColonFunctionAddressList(word: string, action: number[]): number {
+       const data: Data = new Data(action);
+       data.is_fn_colon_array = true;
+       return this.addWordData(word, data);
+    }
 
+    public addWordCoreConditional(word: string, action: (stack: Stack) => void ): number {
+       const data: Data = new Data(action);
+       data.is_fn_core = true;
+       data.is_fn_condition = true;
+       return this.addWordData(word, data);
+    }
+
+    public addWordCoreImmediate(word: string, action: (stack: Stack) => void ): number {
+       const data: Data = new Data(action);
+       data.is_fn_core = true;
+       data.is_fn_immediate = true;
+       return this.addWordData(word, data);
+    }
+
+    public addWordCoreFunction(word: string, action: (stack: Stack) => void ): number {
+       const data: Data = new Data(action);
+       data.is_fn_core = true;
+       return this.addWordData(word, data);
+    }
+
+    public addWordAddress(word: string, action: number): number {
+        return this.addWordI32(word, action);
+    }
+
+    public addWordI8(word: string, action: number): number {
+        return this.addWordI32(word, action);
+    }
+
+    public addWordI16(word: string, action: number): number {
+        return this.addWordI32(word, action);
+    }
+
+    public addWordI32(word: string, action: number): number {
+       const data: Data = new Data(action);
+       data.is_integer = true;
+       return this.addWordData(word, data);
+    }
+
+    public addWordData(word: string, action: Data): number {
         if (!this.core[word]) {
             this.core[word] = [];
         }
-
         const actionAddress = this.memory.write(action);
         this.core[word].push(actionAddress);
 
         return actionAddress;
     }
 
-    public getAction(word: string): Action | null {
+    public getAction(word: string): Data | null {
         if (!(typeof word === 'string' && word.length > 0)) {
             throw new Error('Dictionary word must be a non-empty string');
         }
@@ -54,16 +90,13 @@ export default class Dictionary {
 
     private divideInt(stack: Stack): void {
         const a = stack.pop() as number;
-        if (typeof a !== 'number') {
-            throw new Error(`Int / divisor must be a number. Was ${a}`);
-        }
-        if (a === 0) {
-            throw new Error('Divide by zero');
+        if (typeof a !== 'number' || a === 0) {
+            throw new Error(`Divisor must be non-zero int. Was ${a}`);
         }
 
         const b = stack.pop() as number;
         if (typeof b !== 'number') {
-            throw new Error(`Int / numerator must be a number. Was ${b}`);
+            throw new Error(`Numerator must be a number. Was ${b}`);
         }
 
         stack.push(Math.floor(b / a));
@@ -99,8 +132,10 @@ export default class Dictionary {
     private compileEnd(dictionary: Dictionary): (stack: Stack) => void {
         const getWordAddress = dictionary.getWordAddress.bind(dictionary);
         return (stack: Stack) => {
-            if (stack.modePeek() !== Mode.COMPILE || !Array.isArray(stack.compile_definition)) {
-                throw new Error('End compilation in COMPILE mode with a definition list');
+            if (stack.modePeek() !== Mode.COMPILE
+                    || stack.compile_definition == null
+                    || !Array.isArray(stack.compile_definition)) {
+                throw new Error(`Must end compilation in COMPILE mode: ${stack.modePeek()} with definition list: ${stack.compile_definition}`);
             }
             const wordName = stack.compile_definition.shift();
             const addressList: number[] = [];
@@ -110,26 +145,36 @@ export default class Dictionary {
                 }
                 const address = getWordAddress(token);
                 if (address === null && isInt(token)) {
-                    const newAddress = this.addWord(token, parseInt(token, 10));
+                    //const newAddress = this.addWordI8(token, parseInt(token, 10));
+                    const newAddress = this.addWordI8(token, parseInt(token, 10));
                     addressList.push(newAddress);
                     continue;
                 }
                 if (typeof address !== 'number') {
                     throw new Error('Extant action must have a memory address');
                 }
-                const action = this.getAction(token);
-                if (typeof action !== 'number' && !Array.isArray(action) && typeof action !== 'function') {
+                const data = this.getAction(token);
+                if (data == null || data.value == null) {
+                    throw new Error(`Defined word: ${token} with address: ${address} must have data`);
+                } else if (typeof data.value !== 'number'
+                        && !Array.isArray(data.value)
+                        && typeof data.value !== 'function') {
                     throw new Error(`Word \`${token}\` action must be a number, an array, or a function`);
                 }
-                if (typeof action === 'function') {
+
+                if (data.is_fn_core && typeof data.value === 'function') {
                     addressList.push(address);
-                } else if (typeof action === 'number') { // new mutable constant number
+                } else if (data.is_integer && typeof data.value === 'number') { // new mutable constant number
                     addressList.push(address);
-                } else if (Array.isArray(action)) { // compiled word list of addresses
-                    addressList.push(...action); // INLINE
+                } else if (data.is_string && typeof data.value === 'string') { // new mutable constant number
+                    addressList.push(address);
+                } else if (data.is_fn_colon_array && Array.isArray(data.value)) { // compiled word list of addresses
+                    addressList.push(...data.value); // INLINE
+                } else {
+                    throw new Error(`Unexpected data: ${data} at address: ${address} of word: ${token}`);
                 }
             }
-            this.addWord(wordName as string, addressList); // returns address, ignored
+            this.addWordColonFunctionAddressList(wordName as string, addressList); // returns address, ignored
             stack.compile_definition = null;
             stack.modePop();
             if (stack.modePeek() !== Mode.EXECUTE) {
@@ -172,10 +217,15 @@ export default class Dictionary {
         stack.modeToggle(Mode.CONSTANT);
     }
 
+    // (num val) CONST (name)
+    // sets value at new address
+    // associates dictionary[name] = address
+    // dictionary.lookup(name) returns value (at address)
+    // TODO push address to stack
     public constInitWord(stack: Stack): void {
         assert(stack.modePeek() === Mode.CONSTANT, "constInit expects to be in CONSTANT Mode. But was: ${stack.modePeek()}");
         assert(stack.length > 1, "stack must have at least two elements to pop. Has only ${stack.length}");
-        this.addWord(stack.pop(), stack.pop()); // name, early value
+        this.addWordI32(stack.pop(), stack.pop()); // name, early value
         stack.modeToggle(Mode.EXECUTE);
     }
 
@@ -185,10 +235,16 @@ export default class Dictionary {
         stack.modeToggle(Mode.VARIABLE);
     }
 
+    // VAR (name)
+    // sets 0 at new address A
+    // sets address A at new addess B
+    // associates dictionary[name] = address B
+    // dictionary.lookup(name) returns (address A) (value at address B)
+    // TODO define var as the address of a CONST
     public varInitWord(stack: Stack): void {
         assert(stack.modePeek() === Mode.VARIABLE, "varInit expects to be in VARIABLE Mode. But was: ${stack.modePeek()}");
-        const addressOfValue = this.memory.write(0);
-        this.addWord(stack.pop(), addressOfValue);
+        const addressOfValue = this.memory.write(new Data(0));
+        this.addWordAddress(stack.pop(), addressOfValue);
         stack.modeToggle(Mode.EXECUTE);
     }
 
@@ -197,14 +253,16 @@ export default class Dictionary {
     private varSetValAtAddress(dictionary: Dictionary): (stack: Stack) => void {
         const getWordAddress = dictionary.getWordAddress.bind(dictionary);
         return (stack: Stack) => {
-            assert(stack.modePeek() === Mode.EXECUTE, "varSetValAtAddress expects to be in EXECUTE Mode. But was: ${stack.modePeek()}");
+            assert(stack.modePeek() === Mode.EXECUTE,
+                "varSetValAtAddress expects to be in EXECUTE Mode. But was: ${stack.modePeek()}");
             assert(stack.length > 1, "stack must have at least two elements to pop. Has only ${stack.length}");
             const addressOfVar = stack.pop();
             const value = stack.pop();
             if (addressOfVar == null) { // == or undefined double==equal
                 throw new Error("Unexpected address: ${addressOfVar} of variable: ${varName} with value: ${value}");
             }
-            this.memory.write(value, addressOfVar);
+            // TODO write variable length int?
+            this.memory.write(new Data(value), addressOfVar);
         }
     }
 
@@ -217,11 +275,11 @@ export default class Dictionary {
             assert(stack.length > 0, "stack must have at least one element to pop. Has only ${stack.length}");
             const addressOfVar = stack.pop();
             if (addressOfVar == null) { // double== or undefined
-                throw new Error("Unexpected address: ${addressOfVar}");
+                throw new Error(`Unexpected address: ${addressOfVar}`);
             }
-            const value = this.memory.read(addressOfVar);
+            const value = this.memory.readI32(addressOfVar);
             if (typeof value !== 'number') {
-                throw new Error("Unexpected type: ${(value typeof)} of value: ${value} of variable: ${varName} at address: ${addressOfVar}")
+                throw new Error(`Unexpected type: ${typeof value} of value: ${value} at address: ${addressOfVar}`);
             }
             stack.push(value);
         }
@@ -229,50 +287,50 @@ export default class Dictionary {
 
     private loadCoreWords(): void {
         // 0 no pops
-        for (let i=0; i<=2; i++) this.addWord(''+i, i);
+        for (let i=0; i<=2; i++) this.addWordI8(''+i, i);
 
         // 1 pop
-        this.addWord('IF', this.conditionIf);
-        this.addWord('ELSE', this.conditionElse);
-        this.addWord('THEN', this.conditionThen);
-        this.addWord(':', this.compileStart);
-        this.addWord(';', this.compileEnd(this) );
-        this.addWord('CONST', this.constInitMode);
-        this.addWord('VAR', this.varInitMode);
-        this.addWord('!', this.varSetValAtAddress(this));
-        this.addWord('@', this.varGetValAtAddress(this));
-        this.addWord('DROP', (stack: Stack) => stack.pop());
-        this.addWord('DUP', (stack: Stack) => stack.push(stack.peek()));
-        this.addWord('NOT', (stack: Stack) => stack.push(~stack.pop()));
-        this.addWord('ABS', this.absoluteValue);
-        this.addWord('=0', (stack: Stack) => stack.push(stack.pop() === 0 ? 1 : 0));
-        this.addWord('<0', (stack: Stack) => stack.push(stack.pop() < 0 ? 1 : 0));
-        this.addWord('>0', (stack: Stack) => stack.push(stack.pop() > 0 ? 1 : 0));
+        this.addWordCoreConditional('IF', this.conditionIf);
+        this.addWordCoreConditional('ELSE', this.conditionElse);
+        this.addWordCoreConditional('THEN', this.conditionThen);
+        this.addWordCoreFunction(':', this.compileStart);
+        this.addWordCoreImmediate(';', this.compileEnd(this) );
+        this.addWordCoreFunction('CONST', this.constInitMode);
+        this.addWordCoreFunction('VAR', this.varInitMode);
+        this.addWordCoreFunction('!', this.varSetValAtAddress(this));
+        this.addWordCoreFunction('@', this.varGetValAtAddress(this));
+        this.addWordCoreFunction('DROP', (stack: Stack) => stack.pop());
+        this.addWordCoreFunction('DUP', (stack: Stack) => stack.push(stack.peek()));
+        this.addWordCoreFunction('NOT', (stack: Stack) => stack.push(~stack.pop()));
+        this.addWordCoreFunction('ABS', this.absoluteValue);
+        this.addWordCoreFunction('=0', (stack: Stack) => stack.push(stack.pop() === 0 ? 1 : 0));
+        this.addWordCoreFunction('<0', (stack: Stack) => stack.push(stack.pop() < 0 ? 1 : 0));
+        this.addWordCoreFunction('>0', (stack: Stack) => stack.push(stack.pop() > 0 ? 1 : 0));
 
         // 0 no pops
-        this.addWord('PS', (stack: Stack) => console.log(stack));
-        this.addWord('PD', (stack: Stack) => console.log(this));
-        this.addWord('PM', (stack: Stack) => console.log(this.memory));
+        this.addWordCoreFunction('PS', (stack: Stack) => console.log(stack));
+        this.addWordCoreFunction('PD', (stack: Stack) => console.log(this));
+        this.addWordCoreFunction('PM', (stack: Stack) => console.log(this.memory));
 
         // 2 pop pops
-        this.addWord('+', (stack: Stack) => stack.push(stack.pop() + stack.pop()));
-        this.addWord('-', (stack: Stack) => stack.push(stack.pop(-2) - stack.pop()));
-        this.addWord('*', (stack: Stack) => stack.push(stack.pop() * stack.pop()));
-        this.addWord('/', this.divideInt);
-        this.addWord('=', (stack: Stack) => stack.push(stack.pop() === stack.pop() ? 1 : 0));
-        this.addWord('<', (stack: Stack) => stack.push(stack.pop() > stack.pop() ? 1 : 0));
-        this.addWord('>', (stack: Stack) => stack.push(stack.pop() < stack.pop() ? 1 : 0));
-        this.addWord('OVER', (stack: Stack) => stack.push(stack.peek(-2)));
-        this.addWord('SWAP', (stack: Stack) => stack.push(stack.pop(-2)));
-        this.addWord('AND', (stack: Stack) => stack.push(stack.pop() & stack.pop()));
-        this.addWord('OR', (stack: Stack) => stack.push(stack.pop() | stack.pop()));
-        this.addWord('XOR', (stack: Stack) => stack.push(stack.pop() ^ stack.pop()));
-        this.addWord('<=0', (stack: Stack) => stack.push(stack.pop() <= 0 ? 1 : 0));
-        this.addWord('>=0', (stack: Stack) => stack.push(stack.pop() >= 0 ? 1 : 0));
-        this.addWord('MOD', this.mod);
+        this.addWordCoreFunction('+', (stack: Stack) => stack.push(stack.pop() + stack.pop()));
+        this.addWordCoreFunction('-', (stack: Stack) => stack.push(stack.pop(-2) - stack.pop()));
+        this.addWordCoreFunction('*', (stack: Stack) => stack.push(stack.pop() * stack.pop()));
+        this.addWordCoreFunction('/', this.divideInt);
+        this.addWordCoreFunction('=', (stack: Stack) => stack.push(stack.pop() === stack.pop() ? 1 : 0));
+        this.addWordCoreFunction('<', (stack: Stack) => stack.push(stack.pop() > stack.pop() ? 1 : 0));
+        this.addWordCoreFunction('>', (stack: Stack) => stack.push(stack.pop() < stack.pop() ? 1 : 0));
+        this.addWordCoreFunction('OVER', (stack: Stack) => stack.push(stack.peek(-2)));
+        this.addWordCoreFunction('SWAP', (stack: Stack) => stack.push(stack.pop(-2)));
+        this.addWordCoreFunction('AND', (stack: Stack) => stack.push(stack.pop() & stack.pop()));
+        this.addWordCoreFunction('OR', (stack: Stack) => stack.push(stack.pop() | stack.pop()));
+        this.addWordCoreFunction('XOR', (stack: Stack) => stack.push(stack.pop() ^ stack.pop()));
+        this.addWordCoreFunction('<=0', (stack: Stack) => stack.push(stack.pop() <= 0 ? 1 : 0));
+        this.addWordCoreFunction('>=0', (stack: Stack) => stack.push(stack.pop() >= 0 ? 1 : 0));
+        this.addWordCoreFunction('MOD', this.mod);
 
         // 3 pop pop pops
-        this.addWord('ROT', (stack: Stack) => stack.push(stack.pop(-3)));
+        this.addWordCoreFunction('ROT', (stack: Stack) => stack.push(stack.pop(-3)));
     }
 
     toString(): string {

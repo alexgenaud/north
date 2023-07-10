@@ -1,11 +1,10 @@
 import { isInt, assert, Mode } from '../north/Util';
+import Data from '../north/Data';
 import Dictionary from '../north/Dictionary';
 import Memory from '../north/Memory';
 import Stack from '../north/Stack';
 
 
-const CONDITIONAL_WORDS_IN_MEMORY = [3, 4, 5];  /* IF , ELSE , THEN */
-const CONDITIONAL_WORDS = ['IF', 'ELSE', 'THEN'];
 const CONDITIONAL_IGNORE_MODES = [Mode.IGNORE, Mode.BLOCK];
 export default class Interpreter {
     memory: Memory;
@@ -18,34 +17,31 @@ export default class Interpreter {
         this.stack = new Stack();
     }
 
-/*
-constructor(dictionary?: Dictionary, stack?: Stack, memory?: Memory) {
-this.memory = memory ? memory : new Memory();
-this.dictionary = dictionary ? dictionary : new Dictionary(this.memory);
-this.stack = stack ? stack : new Stack();
-}
-*/
-
     execute_colon_word(address_list: number[]): void {
         for (const address of address_list) {
+            assert(typeof address === 'number',
+                    `Executed colon word address: ${address} must be number`);
+            const data: Data = this.memory.read(address);
+            assert(data != null && data instanceof Data,
+                    `Data at address: ${address} must exist in memory`);
+            assert(data.value != null,
+                    `Data at address: ${address} exists but has no value`);
+
             const mode: Mode = this.stack.modePeek();
-            if (CONDITIONAL_IGNORE_MODES.includes(mode) &&
-                    !CONDITIONAL_WORDS_IN_MEMORY.includes(address)) {
+            if (CONDITIONAL_IGNORE_MODES.includes(mode) && !data.is_fn_condition) {
                 continue;
             }
 
-            assert(typeof address === 'number', `Executed colon word address: ${address} must be number`);
-            const value = this.memory.read(address);
-            assert(value !== undefined, `Value at address: ${address} must exist in memory`);
-
-            if (typeof value === 'function') {
-                value(this.stack);
-            } else if (typeof value === 'number') {
-                this.stack.push(value);
-            } else if (Array.isArray(value)) {
-                this.execute_colon_word(value);
+            if (data.is_fn_core && typeof data.value === 'function') {
+                data.value(this.stack);
+            } else if (data.is_integer && typeof data.value === 'number') {
+                this.stack.push(data.value);
+            } else if (data.is_string && typeof data.value === 'string') {
+                this.stack.push(data.value);
+            } else if (data.is_fn_colon_array && Array.isArray(data.value)) {
+                this.execute_colon_word(data.value);
             } else {
-                throw new Error(`Unknown type: ${ typeof(value) } of value: ${value}`);
+                throw new Error(`Unknown type: ${ typeof data.value } of value: ${data.value}`);
             }
         }
     }
@@ -56,27 +52,40 @@ this.stack = stack ? stack : new Stack();
         }
         const tokens = string_input.trim().split(/\s+/);
         for (const token of tokens) {
+            if (token == null || (typeof token === 'string' && token.length < 1)) {
+                continue;
+            }
+            assert(token != null, "Token must not be null")
             const mode: Mode = this.stack.modePeek();
+            const action: Data | null = this.dictionary.getAction(token);
             if (mode === Mode.EXECUTE ||
-                    (mode=== Mode.COMPILE && token === ';') ||
-                    (CONDITIONAL_IGNORE_MODES.includes(mode) && CONDITIONAL_WORDS.includes(token))
-            ) {
-                const action = this.dictionary.getAction(token);
-                if (typeof action === 'function') {
-                    action(this.stack);
-                } else if (Array.isArray(action)) {
-                    this.execute_colon_word(action);
-                } else if (action != null) {
-                    this.stack.push(action);
-                } else if (isInt(token)) {
-                    this.stack.push(parseInt(token, 10));
-                } else if (typeof token === 'string') {
-                    this.stack.push(token);
+                    (mode === Mode.COMPILE && action !== null
+                            && action.is_fn_immediate) ||
+                    (CONDITIONAL_IGNORE_MODES.includes(mode) && action !== null
+                            && action.is_fn_condition)) {
+                if (action == null) {
+                    if (isInt(token)) this.stack.push(parseInt(token, 10));
+                    else if (typeof token === 'string') this.stack.push(token);
+                    else throw new Error(`Unexpected token: ${token} and action: null`);
+                } else if (action.value == null) {
+                    throw new Error(`Null action.value of token: ${token}. Action: ${action}`);
+                } else if (action.is_fn_core && typeof action.value === 'function') {
+                    action.value(this.stack);
+                } else if (action.is_fn_colon_array && Array.isArray(action.value)) {
+                    this.execute_colon_word(action.value);
+                } else if (action.is_integer && isInt(action.value)) {
+                    this.stack.push(action.value as number);
+                } else if (action.is_string && typeof action.value === 'string') {
+                    this.stack.push(action.value);
                 } else {
-                    throw new Error("Unexpected token: ${token} or type of action: ${action}");
+                    throw new Error("Unexpected token: " + token
+                            + " or type of action: " + action.value );
                 }
             } else if (mode === Mode.COMPILE) {
-                this.stack.compile_definition!.push(token);
+                if (this.stack.compile_definition == null) {
+                    throw new Error("Compiled definition must not be null while in COMPILE mode");
+                }
+                this.stack.compile_definition.push(token);
             } else if (mode === Mode.CONSTANT) {
                 this.stack.push(token);
                 this.dictionary.constInitWord(this.stack)

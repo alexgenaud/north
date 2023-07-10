@@ -1,10 +1,10 @@
 import { isInt, assert } from '../north/Util';
-import { Action } from '../north/Dictionary';
+import Data from '../north/Data';
 
 
 export default class Memory {
     size: number;
-    memory: Action[];
+    memory: Data[];
     highestAddress: number;
 
     constructor(size?: number) {
@@ -13,7 +13,15 @@ export default class Memory {
         this.highestAddress = -1;
     }
 
-    read(address: number): Action {
+    readI32(address: number): number {
+        const data: Data = this.read(address);
+        if (data == null || !data.is_integer || data.value == null || !isInt(data.value)) {
+            throw new Error(`Memory value must be a valid integer at address: ${address} was data: ${data}`);
+        }
+        return data.value as number;
+    }
+
+    read(address: number): Data {
         assert(
             Number.isInteger(address) && address >= 0 && address < this.memory.length,
             `Memory address must be a valid integer within bounds: ${address}`
@@ -21,10 +29,14 @@ export default class Memory {
         return this.memory[address];
     }
 
-    write(action: Action, address?: number): number {
-        if (!(typeof action === 'number' || Array.isArray(action) ||
-                     typeof action === 'function')) {
-            throw new Error('Memory action must be a number, an array, or a function');
+    write(data: Data, address?: number): number {
+        if (data == null || data.value == null) {
+            throw new Error("Memory data must not be null");
+        }
+        if ( ! ((data.is_integer && isInt(data.value)) ||
+                (data.is_fn_core && typeof data.value === 'function')  ||
+                (data.is_fn_colon_array && Array.isArray(data.value)))) {
+            throw new Error('Memory data: '+ data.value +' must be a number or function');
         }
         if (address === undefined) {
             address = this.highestAddress = this.highestAddress + 1;
@@ -35,7 +47,7 @@ export default class Memory {
             Number.isInteger(address) && address >= 0 && address < this.memory.length,
             `Memory address must be a valid integer within bounds: ${address}`
         );
-        this.memory[address] = action;
+        this.memory[address] = data;
         return address;
     }
 
