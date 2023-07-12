@@ -1,16 +1,16 @@
 import { isInt, Mode, assert } from '../north/Util';
-import Memory from '../north/Memory'; // Assuming you have a Memory class implementation
-import Stack from '../north/Stack'; // Assuming you have a Memory class implementation
-import Data from '../north/Data'; // Assuming you have a Memory class implementation
+import Machine from '../north/Machine';
+import Stack from '../north/Stack';
+import Data from '../north/Data';
 
 
 export default class Dictionary {
     private core: { [word: string]: number[] };
-    private memory: Memory;
+    private machine: Machine;
 
-    constructor(memory: Memory) {
+    constructor(machine: Machine) {
         this.core = {};
-        this.memory = memory;
+        this.machine = machine;
         this.loadCoreWords();
     }
 
@@ -62,7 +62,7 @@ export default class Dictionary {
         if (!this.core[word]) {
             this.core[word] = [];
         }
-        const actionAddress = this.memory.write(action);
+        const actionAddress = this.machine.write(action);
         this.core[word].push(actionAddress);
 
         return actionAddress;
@@ -74,8 +74,8 @@ export default class Dictionary {
         }
 
         const actionList = this.core[word];
-        const memoryAddress = actionList ? actionList[actionList.length - 1] : null;
-        const result = (memoryAddress != null) ? this.memory.read(memoryAddress) : null;
+        const address = actionList ? actionList[actionList.length - 1] : null;
+        const result = (address != null) ? this.machine.read(address) : null;
         return result;
     }
 
@@ -151,7 +151,7 @@ export default class Dictionary {
                     continue;
                 }
                 if (typeof address !== 'number') {
-                    throw new Error('Extant action must have a memory address');
+                    throw new Error('Extant action must have number address');
                 }
                 const data = this.getAction(token);
                 if (data == null || data.value == null) {
@@ -243,7 +243,7 @@ export default class Dictionary {
     // TODO define var as the address of a CONST
     public varInitWord(stack: Stack): void {
         assert(stack.modePeek() === Mode.VARIABLE, "varInit expects to be in VARIABLE Mode. But was: ${stack.modePeek()}");
-        const addressOfValue = this.memory.write(new Data(0));
+        const addressOfValue = this.machine.write(new Data(0));
         this.addWordAddress(stack.pop(), addressOfValue);
         stack.modeToggle(Mode.EXECUTE);
     }
@@ -262,7 +262,7 @@ export default class Dictionary {
                 throw new Error("Unexpected address: ${addressOfVar} of variable: ${varName} with value: ${value}");
             }
             // TODO write variable length int?
-            this.memory.write(new Data(value), addressOfVar);
+            this.machine.write(new Data(value), addressOfVar);
         }
     }
 
@@ -277,11 +277,13 @@ export default class Dictionary {
             if (addressOfVar == null) { // double== or undefined
                 throw new Error(`Unexpected address: ${addressOfVar}`);
             }
-            const value = this.memory.readI32(addressOfVar);
-            if (typeof value !== 'number') {
-                throw new Error(`Unexpected type: ${typeof value} of value: ${value} at address: ${addressOfVar}`);
+            const data = this.machine.read(addressOfVar);
+            if (data == null || !data.is_integer) {
+                throw new Error(`Must be a valid integer at address: ${addressOfVar} was data: ${data}`);
+            } else if (data.value == null || !isInt(data.value) || typeof data.value !== 'number') {
+                throw new Error(`Unexpected type: ${typeof data.value} of value: ${data.value} at address: ${addressOfVar}`);
             }
-            stack.push(value);
+            stack.push(data.value);
         }
     }
 
@@ -310,7 +312,7 @@ export default class Dictionary {
         // 0 no pops
         this.addWordCoreFunction('PS', (stack: Stack) => console.log(stack));
         this.addWordCoreFunction('PD', (stack: Stack) => console.log(this));
-        this.addWordCoreFunction('PM', (stack: Stack) => console.log(this.memory));
+        this.addWordCoreFunction('PM', (stack: Stack) => console.log(this.machine));
 
         // 2 pop pops
         this.addWordCoreFunction('+', (stack: Stack) => stack.push(stack.pop() + stack.pop()));

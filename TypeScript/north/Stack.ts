@@ -2,8 +2,8 @@ import { isInt, assert, Mode } from '../north/Util';
 
 
 export default class Stack {
-    stack: (number | string)[];
-    current_index: number;
+    private stack: (number | string)[];
+    private current_index: number;
     mode: Mode[] = [Mode.EXECUTE];
     compile_definition: any[] | null;
 

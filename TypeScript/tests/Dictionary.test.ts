@@ -1,16 +1,14 @@
-//import { isInt, Mode } from '../north/Util';
 import Data from '../north/Data';
 import Dictionary from '../north/Dictionary';
-import Memory from '../north/Memory';
+import Machine from '../north/Machine';
 import Stack from '../north/Stack';
 
 describe('Dictionary', () => {
     let dictionary: Dictionary;
-    let memory: Memory;
 
     beforeEach(() => {
-        memory = new Memory();
-        dictionary = new Dictionary(memory);
+        const machine = new Machine();
+        dictionary = machine.dictionary;
     });
 
     it('should add a word and retrieve its data', () => {

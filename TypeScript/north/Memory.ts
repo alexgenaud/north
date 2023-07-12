@@ -3,22 +3,14 @@ import Data from '../north/Data';
 
 
 export default class Memory {
-    size: number;
-    memory: Data[];
-    highestAddress: number;
+    private size: number;
+    private memory: Data[];
+    private highestAddress: number;
 
     constructor(size?: number) {
-        this.size = size === undefined ? 55 : size;
+        this.size = size === undefined ? 64 : size;
         this.memory = new Array(this.size).fill(0);
         this.highestAddress = -1;
-    }
-
-    readI32(address: number): number {
-        const data: Data = this.read(address);
-        if (data == null || !data.is_integer || data.value == null || !isInt(data.value)) {
-            throw new Error(`Memory value must be a valid integer at address: ${address} was data: ${data}`);
-        }
-        return data.value as number;
     }
 
     read(address: number): Data {
@@ -40,6 +32,7 @@ export default class Memory {
         }
         if (address === undefined) {
             address = this.highestAddress = this.highestAddress + 1;
+            //console.log("address not specified so: "+ address);
         } else if (address > this.highestAddress) {
             this.highestAddress = address;
         }
@@ -47,7 +40,9 @@ export default class Memory {
             Number.isInteger(address) && address >= 0 && address < this.memory.length,
             `Memory address must be a valid integer within bounds: ${address}`
         );
+
         this.memory[address] = data;
+        //if (address > 64) console.log("set: "+ data +" : at address: "+ address);
         return address;
     }
 

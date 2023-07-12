@@ -23,6 +23,7 @@ export default class Data {
 
     is_fn_immediate = false;
     is_fn_condition = false;
+
     constructor(value: ((s: Stack) => void) | boolean | number | number[] | string) {
         if (typeof value === 'boolean') {
             this.is_integer = true;
@@ -36,5 +37,23 @@ export default class Data {
         else throw new Error("Unexpected type: " + (typeof value)
                 + " to construct Data with input value: " + value);
         this.value = value;
+    }
+
+    dump(): {"i8": number, "val": ((s: Stack) => void) | number | number[] | string } {
+        let i8 = 0;
+
+        if (this.is_fn_core && this.is_fn_colon_array) {
+            if (this.is_fn_colon_array) i8 += 128; // "10-- 0000"
+            else if (this.is_fn_core) i8 += 128 + 64; // "11-- 0000"
+            if (this.is_fn_immediate) i8 += 32; // "1-1- 0000"
+            if (this.is_fn_condition) i8 += 16; // "1--1 0000"
+        } else if (this.is_string) {
+            i8 += 64; // "0100 0000"
+        } else if ((this.is_integer || this.is_address) &&
+            (typeof this.value === 'number') && this.value < 64) {
+            i8 += this.value; "00-- ----"
+        }
+
+        return {"i8": i8, "val": this.value};
     }
 }
