@@ -1,21 +1,24 @@
 export enum Mode {
     EXECUTE = 1,
     COMPILE = 2,
-    IGNORE = 3,  // can be toggled with EXECUTE in same layer
-    BLOCK = 4,  // if parent is IGNORED then child layers are blocked
-    VARIABLE = 5,  // set variable name with next token
-    CONSTANT = 6,  // set constant name with next token, value from earlier
-  // maybe need COMMENTS
+    IGNORE = 3, // can be toggled with EXECUTE in same layer
+    BLOCK = 4, // if parent is IGNORED then child layers are blocked
+    VARIABLE = 5, // set variable name with next token
+    CONSTANT = 6, // set constant name with next token, value from earlier
+    // maybe need COMMENTS
 }
 
 export function isInt(token: any): boolean {
-    if (typeof token === 'number') {
+    if (typeof token === "number") {
         return true;
     }
-    if (typeof token !== 'string') {
+    if (typeof token !== "string") {
         return false;
     }
-    if (token.match(/^\d+$/g) || (token.startsWith('-') && token.slice(1).match(/^\d+$/g))) {
+    if (
+        token.match(/^\d+$/g) ||
+        (token.startsWith("-") && token.slice(1).match(/^\d+$/g))
+    ) {
         return true;
     }
     return false;
@@ -24,7 +27,6 @@ export function isInt(token: any): boolean {
 export function assert(expect: boolean, message: string): void {
     if (!expect) {
         console.error(message);
-        throw new Error('Assertion failed: ' + message);
+        throw new Error("Assertion failed: " + message);
     }
 }
-

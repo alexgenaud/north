@@ -1,59 +1,157 @@
-import Machine from '../north/Machine';
+import { DataBlock, DataType } from "./types";
+import Machine from "../north/Machine";
 
-/*
-TODO map bytes to memory byte[]
-by type and value byte length
-000-099 1 byte constants 0,1,2, and s8 (-128-127) variables.
-010-099 1 byte addresses core functions
-100-199 2 byte i16
-200-299 4 byte f16
-100-199 var byte address arrays i15[] for colon definitions
-200-299 var byte UTF-8 strings
- */
 export default class Data {
-    value: ((m: Machine) => void) | number | number[] | string = 0;
+    private start_address: number = 0;
+    private type: DataType = DataType.uninit;
+    private value: ((m: Machine) => void) | number | number[] | string = 0;
 
-    is_integer = false;
-    is_address = false; // TODO not quite used yet
-
-    is_string = false;
-
-    is_fn_core = false;
-    is_fn_colon_array = false;
-
-    is_fn_immediate = false;
-    is_fn_condition = false;
-
-    constructor(value: ((m: Machine) => void) | boolean | number | number[] | string) {
-        if (typeof value === 'boolean') {
-            this.is_integer = true;
+    constructor(
+        value:
+            | ((m: Machine) => void)
+            | boolean
+            | number
+            | number[]
+            | string = 0,
+        type = DataType.uninit,
+        address = 0
+    ) {
+        this.start_address = address;
+        if (typeof value === "boolean") {
+            this.type =
+                type !== DataType.integer
+                    ? DataType.tiny_int
+                    : DataType.integer;
             this.value = value ? 1 : 0;
             return;
         }
-        if (typeof value === 'number') this.is_integer = true;
-        else if (typeof value === 'string') this.is_string = true;
-        else if (typeof value === 'function') this.is_fn_core = true;
-        else if (Array.isArray(value)) this.is_fn_colon_array = true;
-        else throw new Error("Unexpected type: " + (typeof value)
-                + " to construct Data with input value: " + value);
+        this.type = type;
         this.value = value;
     }
 
-    dump(): {"i8": number, "val": ((m: Machine) => void) | number | number[] | string } {
-        let i8 = 0;
+    public isFunc(): boolean {
+        return [
+            DataType.fn_colon_norm,
+            DataType.fn_colon_condition,
+            DataType.fn_colon_immediate,
+            DataType.fn_core_norm,
+            DataType.fn_core_condition,
+            DataType.fn_core_immediate,
+        ].includes(this.type);
+    }
 
-        if (this.is_fn_core && this.is_fn_colon_array) {
-            if (this.is_fn_colon_array) i8 += 128; // "10-- 0000"
-            else if (this.is_fn_core) i8 += 128 + 64; // "11-- 0000"
-            if (this.is_fn_immediate) i8 += 32; // "1-1- 0000"
-            if (this.is_fn_condition) i8 += 16; // "1--1 0000"
-        } else if (this.is_string) {
-            i8 += 64; // "0100 0000"
-        } else if ((this.is_integer || this.is_address) &&
-            (typeof this.value === 'number') && this.value < 64) {
-            i8 += this.value; "00-- ----"
+    public isCoreFunc(): boolean {
+        return [
+            DataType.fn_core_norm,
+            DataType.fn_core_condition,
+            DataType.fn_core_immediate,
+        ].includes(this.type);
+    }
+
+    public isColonFunc(): boolean {
+        return [
+            DataType.fn_colon_norm,
+            DataType.fn_colon_condition,
+            DataType.fn_colon_immediate,
+        ].includes(this.type);
+    }
+
+    public isConditionFunc(): boolean {
+        return (
+            this.type == DataType.fn_colon_condition ||
+            this.type == DataType.fn_core_condition
+        );
+    }
+
+    public isImmediateFunc(): boolean {
+        return (
+            this.type == DataType.fn_colon_immediate ||
+            this.type == DataType.fn_core_immediate
+        );
+    }
+
+    public isInt(): boolean {
+        return [DataType.integer, DataType.tiny_int].includes(this.type);
+    }
+
+    public isStr(): boolean {
+        return this.type == DataType.string;
+    }
+
+    public isPtr(): boolean {
+        return this.type == DataType.ptr_address;
+    }
+
+    public isFloat(): boolean {
+        return this.type == DataType.float;
+    }
+
+    public setAddress(address: number): void {
+        this.start_address = address;
+    }
+
+    public getAddress() {
+        return this.start_address;
+    }
+
+    public getValue() {
+        return this.value;
+    }
+
+    public setValue(
+        value: ((m: Machine) => void) | number | number[] | string
+    ) {
+        this.value = value;
+    }
+
+    public dumpData(): DataBlock {
+        return {
+            address: this.start_address,
+            type: this.getTypeName(),
+            value: this.getValueName(),
+            selected: false,
+        };
+    }
+
+    public getTypeName():
+        | "tiny"
+        | "int"
+        | "float"
+        | "ptr"
+        | "str"
+        | "core"
+        | "colon"
+        | "uninit" {
+        switch (this.type) {
+            case DataType.tiny_int:
+                return "tiny";
+            case DataType.integer:
+                return "int";
+            case DataType.float:
+                return "float";
+            case DataType.string:
+                return "str";
+            case DataType.ptr_address:
+                return "ptr";
+            default:
+                return this.isCoreFunc()
+                    ? "core"
+                    : this.isColonFunc()
+                    ? "colon"
+                    : "uninit";
         }
+    }
 
-        return {"i8": i8, "val": this.value};
+    public getValueName(): number | string {
+        if (this.value === null) {
+            return 0;
+        }
+        if (typeof this.value === "function") {
+            return "core";
+        }
+        if (Array.isArray(this.value)) {
+            return "colon";
+        }
+        return this.value;
     }
 }

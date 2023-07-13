@@ -1,5 +1,4 @@
-import { isInt, assert, Mode } from '../north/Util';
-
+import { isInt, assert, Mode } from "../north/Util";
 
 export default class Stack {
     private stack: (number | string)[];
@@ -7,17 +6,20 @@ export default class Stack {
     constructor(initstack?: string | string[] | undefined) {
         if (Array.isArray(initstack)) {
             this.stack = initstack;
-        } else if (typeof initstack === 'string') {
-            this.stack = initstack.split(' ');
+        } else if (typeof initstack === "string") {
+            this.stack = initstack.split(" ");
         } else {
             this.stack = [];
         }
     }
 
     push(value: number | string | Mode): void {
-        assert(typeof value === 'number' || typeof value === 'string', 'Stack token must be a string or number');
+        assert(
+            typeof value === "number" || typeof value === "string",
+            "Stack token must be a string or number"
+        );
         if (isInt(value)) {
-            this.stack.push( Number(value) );
+            this.stack.push(Number(value));
             //this.stack.push(parseInt(value, 10));
         } else {
             this.stack.push(value + "");
@@ -25,13 +27,17 @@ export default class Stack {
     }
 
     extend(list_value: any[]): void {
-        assert(Array.isArray(list_value), 'Extend stack with an array only');
+        assert(Array.isArray(list_value), "Extend stack with an array only");
         this.stack.push(...list_value);
     }
 
     pop(index = -1): any {
-        assert(this.stack.length > 0, 'Stack must have tokens to pop');
-        if (index === undefined || index === -1 || index === this.stack.length -1) {
+        assert(this.stack.length > 0, "Stack must have tokens to pop");
+        if (
+            index === undefined ||
+            index === -1 ||
+            index === this.stack.length - 1
+        ) {
             return this.stack.pop();
         } else if (index < 0) {
             return this.stack.splice(this.stack.length + index, 1)[0];
@@ -40,12 +46,12 @@ export default class Stack {
     }
 
     toggle(next: Mode): void {
-        assert(Object.values(Mode).includes(next), 'Must set transition mode');
+        assert(Object.values(Mode).includes(next), "Must set transition mode");
         this.stack[this.stack.length - 1] = next;
     }
 
     peek(index = -1): any {
-        assert(this.stack.length > 0, 'Stack must have tokens to peek');
+        assert(this.stack.length > 0, "Stack must have tokens to peek");
         if (index < 0) {
             index = this.stack.length + index;
         }
@@ -61,6 +67,6 @@ export default class Stack {
     }
 
     toString(): string {
-        return this.stack.join(' ');
+        return this.stack.join(" ");
     }
 }
