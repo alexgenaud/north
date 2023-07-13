@@ -1,4 +1,4 @@
-import Stack from '../north/Stack';
+import Machine from '../north/Machine';
 
 /*
 TODO map bytes to memory byte[]
@@ -11,7 +11,7 @@ by type and value byte length
 200-299 var byte UTF-8 strings
  */
 export default class Data {
-    value: ((stack: Stack) => void) | number | number[] | string = 0;
+    value: ((m: Machine) => void) | number | number[] | string = 0;
 
     is_integer = false;
     is_address = false; // TODO not quite used yet
@@ -24,7 +24,7 @@ export default class Data {
     is_fn_immediate = false;
     is_fn_condition = false;
 
-    constructor(value: ((s: Stack) => void) | boolean | number | number[] | string) {
+    constructor(value: ((m: Machine) => void) | boolean | number | number[] | string) {
         if (typeof value === 'boolean') {
             this.is_integer = true;
             this.value = value ? 1 : 0;
@@ -39,7 +39,7 @@ export default class Data {
         this.value = value;
     }
 
-    dump(): {"i8": number, "val": ((s: Stack) => void) | number | number[] | string } {
+    dump(): {"i8": number, "val": ((m: Machine) => void) | number | number[] | string } {
         let i8 = 0;
 
         if (this.is_fn_core && this.is_fn_colon_array) {

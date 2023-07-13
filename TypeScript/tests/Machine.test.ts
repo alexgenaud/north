@@ -11,14 +11,14 @@ describe('Machine', () => {
         for (const token of execStr.trim().split(/\s+/)) {
             machine.execute(token);
         }
-        expect(machine.stack.toString()).toBe(expectStack);
+        expect(machine.opstack.toString()).toBe(expectStack);
     };
 
     const assertExecutePop = (execStr: string, expectPop: number) => {
         for (const token of execStr.trim().split(/\s+/)) {
             machine.execute(token);
         }
-        expect(machine.stack.pop()).toBe(expectPop);
+        expect(machine.opstack.pop()).toBe(expectPop);
     };
 
     test('add_simple', () => {
@@ -270,6 +270,22 @@ describe('Machine', () => {
         assertExecutePop("6 3 /", 2)
         assertExecutePop("6 2 /", 3)
         assertExecutePop("6 1 /", 6)
+    });
+
+    test('should throw an error when dividing by zero', () => {
+        machine.opstack.push(10);
+        machine.opstack.push(0);
+        expect(() => {
+            machine.dictionary['divideInt'](machine);
+        }).toThrowError('Divisor must be non-zero int');
+    });
+
+    test('should throw an error when numerator not a number', () => {
+        machine.opstack.push("ABC");
+        machine.opstack.push(7);
+        expect(() => {
+            machine.dictionary['divideInt'](machine);
+        }).toThrowError('Numerator must be a number');
     });
 
     test('machine_multiply', () => {

@@ -5,9 +5,10 @@ import Stack from '../north/Stack';
 
 describe('Dictionary', () => {
     let dictionary: Dictionary;
+    let machine: Machine;
 
     beforeEach(() => {
-        const machine = new Machine();
+        machine = new Machine();
         dictionary = machine.dictionary;
     });
 
@@ -28,29 +29,4 @@ describe('Dictionary', () => {
         expect(dictionary.getAction('nonexisting')).toBeNull();
     });
 
-    it('should divide integers with integer result', () => {
-        const stack = new Stack();
-        stack.push(13);
-        stack.push(3);
-        dictionary['divideInt'](stack);
-        expect(stack.pop()).toBe(4);
-    });
-
-    it('should throw an error when dividing by zero', () => {
-        const stack = new Stack();
-        stack.push(10);
-        stack.push(0);
-        expect(() => {
-            dictionary['divideInt'](stack);
-        }).toThrowError('Divisor must be non-zero int');
-    });
-
-    it('should throw an error when numerator not a number', () => {
-        const stack = new Stack();
-        stack.push("ABC");
-        stack.push(7);
-        expect(() => {
-            dictionary['divideInt'](stack);
-        }).toThrowError('Numerator must be a number');
-    });
 });

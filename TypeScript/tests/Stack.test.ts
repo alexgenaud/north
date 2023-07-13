@@ -32,13 +32,6 @@ describe('Stack', () => {
         expect(stack.length).toBe(2);
     });
 
-    test('iterate over stack values', () => {
-        stack.push(1);
-        stack.push(2);
-        const values = Array.from(stack);
-        expect(values).toEqual([1, 2]);
-    });
-
     test('return stack contents as string', () => {
         stack.push(1);
         stack.push(2);

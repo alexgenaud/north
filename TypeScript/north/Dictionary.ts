@@ -1,6 +1,5 @@
 import { isInt, Mode, assert } from '../north/Util';
 import Machine from '../north/Machine';
-import Stack from '../north/Stack';
 import Data from '../north/Data';
 
 
@@ -20,21 +19,21 @@ export default class Dictionary {
        return this.addWordData(word, data);
     }
 
-    public addWordCoreConditional(word: string, action: (stack: Stack) => void ): number {
+    public addWordCoreConditional(word: string, action: (m: Machine) => void ): number {
        const data: Data = new Data(action);
        data.is_fn_core = true;
        data.is_fn_condition = true;
        return this.addWordData(word, data);
     }
 
-    public addWordCoreImmediate(word: string, action: (stack: Stack) => void ): number {
+    public addWordCoreImmediate(word: string, action: (m: Machine) => void ): number {
        const data: Data = new Data(action);
        data.is_fn_core = true;
        data.is_fn_immediate = true;
        return this.addWordData(word, data);
     }
 
-    public addWordCoreFunction(word: string, action: (stack: Stack) => void ): number {
+    public addWordCoreFunction(word: string, action: (m: Machine) => void ): number {
        const data: Data = new Data(action);
        data.is_fn_core = true;
        return this.addWordData(word, data);
@@ -88,58 +87,58 @@ export default class Dictionary {
         return actionList ? actionList[actionList.length - 1] : null;
     }
 
-    private divideInt(stack: Stack): void {
-        const a = stack.pop() as number;
+    private divideInt(m: Machine): void {
+        const a = m.opstack.pop() as number;
         if (typeof a !== 'number' || a === 0) {
             throw new Error(`Divisor must be non-zero int. Was ${a}`);
         }
 
-        const b = stack.pop() as number;
+        const b = m.opstack.pop() as number;
         if (typeof b !== 'number') {
             throw new Error(`Numerator must be a number. Was ${b}`);
         }
 
-        stack.push(Math.floor(b / a));
+        m.opstack.push(Math.floor(b / a));
     }
 
-    private absoluteValue(stack: Stack): void {
-        const a = stack.pop() as number;
-        stack.push(a >= 0 ? a : -a);
+    private absoluteValue(m: Machine): void {
+        const a = m.opstack.pop() as number;
+        m.opstack.push(a >= 0 ? a : -a);
     }
 
-    private mod(stack: Stack): void {
-        let d = stack.pop() as number;
+    private mod(m: Machine): void {
+        let d = m.opstack.pop() as number;
         assert( typeof d === 'number' && isInt(d) && d !== 0,
             'Modulo divisor must be non-zero number. Was ${d}');
         if (d < 0) d = -d;
 
-        let n = stack.pop() as number;
+        let n = m.opstack.pop() as number;
         assert( typeof n === 'number' && isInt(n),
             'Modulo numerator must be a number. Was ${n}');
         if (n < 0) n += d * n * (-1);
 
-        stack.push( (n % d) + 0 ); // -0 is possible ! :o
+        m.opstack.push( (n % d) + 0 ); // -0 is possible ! :o
     }
 
-    private compileStart(stack: Stack): void {
-        assert(stack.modePeek() === Mode.EXECUTE && stack.compile_definition === null,
+    private compileStart(m: Machine): void {
+        assert(m.costack.peek() === Mode.EXECUTE && m.compile_definition === null,
             'Start compilation from EXECUTE mode with no definition list');
 
-        stack.modePush(Mode.COMPILE);
-        stack.compile_definition = [];
+        m.costack.push(Mode.COMPILE);
+        m.compile_definition = [];
     }
 
-    private compileEnd(dictionary: Dictionary): (stack: Stack) => void {
+    private compileEnd(dictionary: Dictionary): (m: Machine) => void {
         const getWordAddress = dictionary.getWordAddress.bind(dictionary);
-        return (stack: Stack) => {
-            if (stack.modePeek() !== Mode.COMPILE
-                    || stack.compile_definition == null
-                    || !Array.isArray(stack.compile_definition)) {
-                throw new Error(`Must end compilation in COMPILE mode: ${stack.modePeek()} with definition list: ${stack.compile_definition}`);
+        return (m: Machine) => {
+            if (m.costack.peek() !== Mode.COMPILE
+                    || m.compile_definition == null
+                    || !Array.isArray(m.compile_definition)) {
+                throw new Error(`Must end compilation in COMPILE mode: ${m.costack.peek()} with definition list: ${m.compile_definition}`);
             }
-            const wordName = stack.compile_definition.shift();
+            const wordName = m.compile_definition.shift();
             const addressList: number[] = [];
-            for (const token of stack.compile_definition) {
+            for (const token of m.compile_definition) {
                 if (!(typeof token === 'string' && token.length > 0)) {
                     throw new Error('Compiled colon word must contain non-empty numbers or words');
                 }
@@ -175,64 +174,64 @@ export default class Dictionary {
                 }
             }
             this.addWordColonFunctionAddressList(wordName as string, addressList); // returns address, ignored
-            stack.compile_definition = null;
-            stack.modePop();
-            if (stack.modePeek() !== Mode.EXECUTE) {
+            m.compile_definition = null;
+            m.costack.pop();
+            if (m.costack.peek() !== Mode.EXECUTE) {
                 throw new Error('Expected to pop out of COMPILE into EXECUTE mode');
             }
         }
     }
 
-    private conditionIf(stack: Stack): void {
-        const current = stack.modePeek();
+    private conditionIf(m: Machine): void {
+        const current = m.costack.peek();
         if (current === Mode.IGNORE || current === Mode.BLOCK) {
-            stack.modePush(Mode.BLOCK);
+            m.costack.push(Mode.BLOCK);
         } else if (current === Mode.COMPILE) {
-            stack.modePush(Mode.COMPILE);
+            m.costack.push(Mode.COMPILE);
         } else if (current === Mode.EXECUTE) {
-            stack.modePush(stack.pop() !== 0 ? Mode.EXECUTE : Mode.IGNORE);
+            m.costack.push(m.opstack.pop() !== 0 ? Mode.EXECUTE : Mode.IGNORE);
         }
     }
 
-    private conditionElse(stack: Stack): void {
-        const current = stack.modePeek();
+    private conditionElse(m: Machine): void {
+        const current = m.costack.peek();
         if (current === Mode.IGNORE) {
-            stack.modeToggle(Mode.EXECUTE);
+            m.costack.toggle(Mode.EXECUTE);
         } else if (current === Mode.EXECUTE) {
-            stack.modeToggle(Mode.IGNORE);
+            m.costack.toggle(Mode.IGNORE);
         }
     }
 
-    private conditionThen(stack: Stack): void {
-        if (stack.modePeek() === Mode.COMPILE) {
+    private conditionThen(m: Machine): void {
+        if (m.costack.peek() === Mode.COMPILE) {
             throw new Error('Executed condition must be from EXECUTE or IGNORE but not COMPILE mode');
         }
-        stack.modePop(); // if EXECUTE else IGNORE else EXECUTE
+        m.costack.pop(); // if EXECUTE else IGNORE else EXECUTE
     }
 
     // 220 CONSTANT LIMIT
     // The word LIMIT returns its value not its address
-    private constInitMode(stack: Stack): void {
-        assert(stack.modePeek() === Mode.EXECUTE, "constInit expects to be in EXECUTE Mode. But was: ${stack.modePeek()}");
-        stack.modeToggle(Mode.CONSTANT);
+    private constInitMode(m: Machine): void {
+        assert(m.costack.peek() === Mode.EXECUTE, "constInit expects to be in EXECUTE Mode. But was: ${m.costack.peek()}");
+        m.costack.toggle(Mode.CONSTANT);
     }
 
     // (num val) CONST (name)
     // sets value at new address
     // associates dictionary[name] = address
     // dictionary.lookup(name) returns value (at address)
-    // TODO push address to stack
-    public constInitWord(stack: Stack): void {
-        assert(stack.modePeek() === Mode.CONSTANT, "constInit expects to be in CONSTANT Mode. But was: ${stack.modePeek()}");
-        assert(stack.length > 1, "stack must have at least two elements to pop. Has only ${stack.length}");
-        this.addWordI32(stack.pop(), stack.pop()); // name, early value
-        stack.modeToggle(Mode.EXECUTE);
+    // TODO push address to m.opstack
+    public constInitWord(m: Machine): void {
+        assert(m.costack.peek() === Mode.CONSTANT, "constInit expects to be in CONSTANT Mode. But was: ${m.costack.peek()}");
+        assert(m.opstack.length > 1, "m.opstack must have at least two elements to pop. Has only ${m.opstack.length}");
+        this.addWordI32(m.opstack.pop(), m.opstack.pop()); // name, early value
+        m.costack.toggle(Mode.EXECUTE);
     }
 
     // VAR myVar
-    private varInitMode(stack: Stack): void {
-        assert(stack.modePeek() === Mode.EXECUTE, "varInit expects to be in EXECUTE Mode. But was: ${stack.modePeek()}");
-        stack.modeToggle(Mode.VARIABLE);
+    private varInitMode(m: Machine): void {
+        assert(m.costack.peek() === Mode.EXECUTE, "varInit expects to be in EXECUTE Mode. But was: ${m.costack.peek()}");
+        m.costack.toggle(Mode.VARIABLE);
     }
 
     // VAR (name)
@@ -241,23 +240,23 @@ export default class Dictionary {
     // associates dictionary[name] = address B
     // dictionary.lookup(name) returns (address A) (value at address B)
     // TODO define var as the address of a CONST
-    public varInitWord(stack: Stack): void {
-        assert(stack.modePeek() === Mode.VARIABLE, "varInit expects to be in VARIABLE Mode. But was: ${stack.modePeek()}");
+    public varInitWord(m: Machine): void {
+        assert(m.costack.peek() === Mode.VARIABLE, "varInit expects to be in VARIABLE Mode. But was: ${m.costack.peek()}");
         const addressOfValue = this.machine.write(new Data(0));
-        this.addWordAddress(stack.pop(), addressOfValue);
-        stack.modeToggle(Mode.EXECUTE);
+        this.addWordAddress(m.opstack.pop(), addressOfValue);
+        m.costack.toggle(Mode.EXECUTE);
     }
 
     // ! takes the address of the var and the value to be stored
     // 42 myVar ! (sets myVar = 42)
-    private varSetValAtAddress(dictionary: Dictionary): (stack: Stack) => void {
+    private varSetValAtAddress(dictionary: Dictionary): (m: Machine) => void {
         const getWordAddress = dictionary.getWordAddress.bind(dictionary);
-        return (stack: Stack) => {
-            assert(stack.modePeek() === Mode.EXECUTE,
-                "varSetValAtAddress expects to be in EXECUTE Mode. But was: ${stack.modePeek()}");
-            assert(stack.length > 1, "stack must have at least two elements to pop. Has only ${stack.length}");
-            const addressOfVar = stack.pop();
-            const value = stack.pop();
+        return (m: Machine) => {
+            assert(m.costack.peek() === Mode.EXECUTE,
+                "varSetValAtAddress expects to be in EXECUTE Mode. But was: ${m.costack.peek()}");
+            assert(m.opstack.length > 1, "m.opstack must have at least two elements to pop. Has only ${m.opstack.length}");
+            const addressOfVar = m.opstack.pop();
+            const value = m.opstack.pop();
             if (addressOfVar == null) { // == or undefined double==equal
                 throw new Error("Unexpected address: ${addressOfVar} of variable: ${varName} with value: ${value}");
             }
@@ -267,13 +266,13 @@ export default class Dictionary {
     }
 
     // @ retrieves the value of the variable
-    // myVar @ (returns 42 on the stack)
-    private varGetValAtAddress(dictionary: Dictionary): (stack: Stack) => void {
+    // myVar @ (returns 42 on the m.opstack)
+    private varGetValAtAddress(dictionary: Dictionary): (m: Machine) => void {
         const getWordAddress = dictionary.getWordAddress.bind(dictionary);
-        return (stack: Stack) => {
-            assert(stack.modePeek() === Mode.EXECUTE, "varSetValAtAddress expects to be in EXECUTE Mode. But was: ${stack.modePeek()}");
-            assert(stack.length > 0, "stack must have at least one element to pop. Has only ${stack.length}");
-            const addressOfVar = stack.pop();
+        return (m: Machine) => {
+            assert(m.costack.peek() === Mode.EXECUTE, "varSetValAtAddress expects to be in EXECUTE Mode. But was: ${m.costack.peek()}");
+            assert(m.opstack.length > 0, "m.opstack must have at least one element to pop. Has only ${m.opstack.length}");
+            const addressOfVar = m.opstack.pop();
             if (addressOfVar == null) { // double== or undefined
                 throw new Error(`Unexpected address: ${addressOfVar}`);
             }
@@ -283,7 +282,7 @@ export default class Dictionary {
             } else if (data.value == null || !isInt(data.value) || typeof data.value !== 'number') {
                 throw new Error(`Unexpected type: ${typeof data.value} of value: ${data.value} at address: ${addressOfVar}`);
             }
-            stack.push(data.value);
+            m.opstack.push(data.value);
         }
     }
 
@@ -301,38 +300,38 @@ export default class Dictionary {
         this.addWordCoreFunction('VAR', this.varInitMode);
         this.addWordCoreFunction('!', this.varSetValAtAddress(this));
         this.addWordCoreFunction('@', this.varGetValAtAddress(this));
-        this.addWordCoreFunction('DROP', (stack: Stack) => stack.pop());
-        this.addWordCoreFunction('DUP', (stack: Stack) => stack.push(stack.peek()));
-        this.addWordCoreFunction('NOT', (stack: Stack) => stack.push(~stack.pop()));
+        this.addWordCoreFunction('DROP', (m: Machine) => m.opstack.pop());
+        this.addWordCoreFunction('DUP', (m: Machine) => m.opstack.push(m.opstack.peek()));
+        this.addWordCoreFunction('NOT', (m: Machine) => m.opstack.push(~m.opstack.pop()));
         this.addWordCoreFunction('ABS', this.absoluteValue);
-        this.addWordCoreFunction('=0', (stack: Stack) => stack.push(stack.pop() === 0 ? 1 : 0));
-        this.addWordCoreFunction('<0', (stack: Stack) => stack.push(stack.pop() < 0 ? 1 : 0));
-        this.addWordCoreFunction('>0', (stack: Stack) => stack.push(stack.pop() > 0 ? 1 : 0));
+        this.addWordCoreFunction('=0', (m: Machine) => m.opstack.push(m.opstack.pop() === 0 ? 1 : 0));
+        this.addWordCoreFunction('<0', (m: Machine) => m.opstack.push(m.opstack.pop() < 0 ? 1 : 0));
+        this.addWordCoreFunction('>0', (m: Machine) => m.opstack.push(m.opstack.pop() > 0 ? 1 : 0));
 
         // 0 no pops
-        this.addWordCoreFunction('PS', (stack: Stack) => console.log(stack));
-        this.addWordCoreFunction('PD', (stack: Stack) => console.log(this));
-        this.addWordCoreFunction('PM', (stack: Stack) => console.log(this.machine));
+        this.addWordCoreFunction('PS', (m: Machine) => console.log(m.opstack));
+        this.addWordCoreFunction('PD', (m: Machine) => console.log(this));
+        this.addWordCoreFunction('PM', (m: Machine) => console.log(this.machine));
 
         // 2 pop pops
-        this.addWordCoreFunction('+', (stack: Stack) => stack.push(stack.pop() + stack.pop()));
-        this.addWordCoreFunction('-', (stack: Stack) => stack.push(stack.pop(-2) - stack.pop()));
-        this.addWordCoreFunction('*', (stack: Stack) => stack.push(stack.pop() * stack.pop()));
+        this.addWordCoreFunction('+', (m: Machine) => m.opstack.push(m.opstack.pop() + m.opstack.pop()));
+        this.addWordCoreFunction('-', (m: Machine) => m.opstack.push(m.opstack.pop(-2) - m.opstack.pop()));
+        this.addWordCoreFunction('*', (m: Machine) => m.opstack.push(m.opstack.pop() * m.opstack.pop()));
         this.addWordCoreFunction('/', this.divideInt);
-        this.addWordCoreFunction('=', (stack: Stack) => stack.push(stack.pop() === stack.pop() ? 1 : 0));
-        this.addWordCoreFunction('<', (stack: Stack) => stack.push(stack.pop() > stack.pop() ? 1 : 0));
-        this.addWordCoreFunction('>', (stack: Stack) => stack.push(stack.pop() < stack.pop() ? 1 : 0));
-        this.addWordCoreFunction('OVER', (stack: Stack) => stack.push(stack.peek(-2)));
-        this.addWordCoreFunction('SWAP', (stack: Stack) => stack.push(stack.pop(-2)));
-        this.addWordCoreFunction('AND', (stack: Stack) => stack.push(stack.pop() & stack.pop()));
-        this.addWordCoreFunction('OR', (stack: Stack) => stack.push(stack.pop() | stack.pop()));
-        this.addWordCoreFunction('XOR', (stack: Stack) => stack.push(stack.pop() ^ stack.pop()));
-        this.addWordCoreFunction('<=0', (stack: Stack) => stack.push(stack.pop() <= 0 ? 1 : 0));
-        this.addWordCoreFunction('>=0', (stack: Stack) => stack.push(stack.pop() >= 0 ? 1 : 0));
+        this.addWordCoreFunction('=', (m: Machine) => m.opstack.push(m.opstack.pop() === m.opstack.pop() ? 1 : 0));
+        this.addWordCoreFunction('<', (m: Machine) => m.opstack.push(m.opstack.pop() > m.opstack.pop() ? 1 : 0));
+        this.addWordCoreFunction('>', (m: Machine) => m.opstack.push(m.opstack.pop() < m.opstack.pop() ? 1 : 0));
+        this.addWordCoreFunction('OVER', (m: Machine) => m.opstack.push(m.opstack.peek(-2)));
+        this.addWordCoreFunction('SWAP', (m: Machine) => m.opstack.push(m.opstack.pop(-2)));
+        this.addWordCoreFunction('AND', (m: Machine) => m.opstack.push(m.opstack.pop() & m.opstack.pop()));
+        this.addWordCoreFunction('OR', (m: Machine) => m.opstack.push(m.opstack.pop() | m.opstack.pop()));
+        this.addWordCoreFunction('XOR', (m: Machine) => m.opstack.push(m.opstack.pop() ^ m.opstack.pop()));
+        this.addWordCoreFunction('<=0', (m: Machine) => m.opstack.push(m.opstack.pop() <= 0 ? 1 : 0));
+        this.addWordCoreFunction('>=0', (m: Machine) => m.opstack.push(m.opstack.pop() >= 0 ? 1 : 0));
         this.addWordCoreFunction('MOD', this.mod);
 
         // 3 pop pop pops
-        this.addWordCoreFunction('ROT', (stack: Stack) => stack.push(stack.pop(-3)));
+        this.addWordCoreFunction('ROT', (m: Machine) => m.opstack.push(m.opstack.pop(-3)));
     }
 
     toString(): string {

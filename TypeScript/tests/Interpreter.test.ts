@@ -9,12 +9,12 @@ describe('Interpreter', () => {
 
     const assertExecuteStack = (execStr: string, expectStack: string) => {
         interpreter.execute(execStr);
-        expect(interpreter.machine.stack.toString()).toBe(expectStack);
+        expect(interpreter.machine.opstack.toString()).toBe(expectStack);
     };
 
     const assertExecutePop = (execStr: string, expectPop: number) => {
         interpreter.execute(execStr);
-        expect(interpreter.machine.stack.pop()).toBe(expectPop);
+        expect(interpreter.machine.opstack.pop()).toBe(expectPop);
     };
 
     test('separate_input_one_same_stack', () => {
