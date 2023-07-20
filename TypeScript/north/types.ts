@@ -1,50 +1,60 @@
 // types.ts
+export type DataTypeStr = "f_n" |    "f_i" |    "f_c" |    "c_n" |    "c_i" |    "c_c" |    "str" |    "f64" |    "i8" |    "i16" |    "nil";
+export enum DataType {     f_n = 128, f_i = 129, f_c = 130, c_n = 131, c_i = 132, c_c = 133, str = 134, f64 = 135, i8 = 136, i16 = 137, nil = 0, }
+
 export interface DataBlock {
     address: number;
-    type:
-        | "tiny"
-        | "int"
-        | "float"
-        | "ptr"
-        | "str"
-        | "core"
-        | "colon"
-        | "uninit";
-    value: number | number[] | string;
-    selected: boolean;
+    type: DataTypeStr;
+    value: string;
+    size: number;
+    length: number;
 }
 
 export function createUninitDataBlock(address: number): DataBlock {
     return {
         address: address,
-        type: "uninit",
-        value: 0,
-        selected: false,
+        type: "nil",
+        value: "0",
+        size: 1,
+        length: 0,
     };
 }
 
-/*
-1--- ---- function
-1000 ----   core norm (5 bit functn address)
-1010 ----   core immediate (4 bit f address)
-1011 ----   core condition (4 bit f address)
-1001 ----   colon norm
-1110 ----   colon immediate
-1111 ----   colon condition
-110- ---- strings, floats, ints,
-0--- ---- tiny int
-*/
-export enum DataType {
-    fn_core_norm = 128,
-    fn_core_immediate = 129,
-    fn_core_condition = 130,
-    fn_colon_norm = 131,
-    fn_colon_immediate = 132,
-    fn_colon_condition = 133,
-    ptr_address = 134,
-    float = 135,
-    integer = 136,
-    string = 137,
-    uninit = 255,
-    tiny_int = 0, // 7 bits
+export function getTypeStr(
+    type: DataType
+): DataTypeStr {
+    switch (type) {
+        case DataType.f_n:
+            return "f_n";
+        case DataType.f_i:
+            return "f_i";
+        case DataType.f_c:
+            return "f_c";
+        case DataType.c_n:
+            return "c_n";
+        case DataType.c_i:
+            return "c_i";
+        case DataType.c_c:
+            return "c_c";
+        case DataType.str:
+            return "str";
+        case DataType.f64:
+            return "f64";
+        case DataType.i8:
+            return "i8";
+        case DataType.i16:
+            return "i16";
+        default:
+            return "nil";
+    }
 }
+
+export function isI16(num: number): boolean {
+  return Number.isInteger(num) && num >= 0 && num <= 65535;
+}
+
+export function isI16Array(arr: number[]): arr is number[] {
+  return arr.every(isI16);
+}
+
+

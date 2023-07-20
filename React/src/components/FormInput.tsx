@@ -1,70 +1,71 @@
-import "./custom.scss";
 import Machine from "../../../TypeScript/north/Machine";
-import { useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 
 interface Props {
     machine: Machine;
 }
 
 function FormInput({ machine }: Props) {
-    const [opstack, setOpstack] = useState("");
-    const [costack, setCostack] = useState("");
-    const [input, setInput] = useState("");
-
-    const handleInput = (e: any) => {
+    const [viewState, setViewState] = useState({
+        input: "",
+        opstack: "",
+        costack: machine.coStackString(),
+    });
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-
-        if (!input || !input.trim()) {
-            setInput("");
-            return;
+        if (e.type === "submit" && viewState.input && viewState.input.trim()) {
+            machine.executeInputBuffer(viewState.input);
+            setViewState({
+                input: "",
+                opstack: machine.opStackString(),
+                costack: machine.coStackString(),
+            });
         }
+        //        e.target.focus();
+    };
 
-        console.log("FormIntput before Machine.executeInputBuffer $input");
-        machine.executeInputBuffer(input);
-        console.log("FormIntput after Machine.executeInputBuffer");
-
-        setOpstack(machine.opStackString());
-        setCostack(machine.coStackString());
-        setInput("");
+    const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        if (
+            // To eliminate "Mac  " => "Mac. " behavior.
+            viewState.input &&
+            e.target.value &&
+            viewState.input.length > 0 &&
+            viewState.input.length + 1 === e.target.value.length &&
+            viewState.input.slice(-1) === " " &&
+            e.target.value.slice(-2) === ". "
+        ) {
+            e.target.value = viewState.input + " ";
+        }
+        setViewState({
+            input: e.target.value,
+            opstack: viewState.opstack,
+            costack: viewState.costack,
+        });
+        e.target.focus();
     };
 
     return (
-        <div className="">
-            <form onSubmit={handleInput}>
-                <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-lg flex items-center space-x-4">
-                    <div>
-                        <div className="text-xl font-medium text-black">
-                            Op Stack: {opstack}
-                        </div>
-                        <p className="text-slate-500">{opstack}</p>
-                    </div>
-                </div>
-                <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-lg flex items-center space-x-4">
-                    <div>
-                        <div className="text-xl font-medium text-black">
-                            Co Stack: {costack}
-                        </div>
-                        <p className="text-slate-500">{costack}</p>
-                    </div>
-                </div>
-                <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-lg flex items-center space-x-4">
-                    <div>
-                        <div className="text-xl font-medium text-black">
-                            User Input: {input}
-                        </div>
-                        <label className="text-slate-500">User Input:</label>
-                        <input
-                            className="bg-slate-100"
-                            type="text"
-                            required
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                        />
-                        <p>{input}</p>
-                    </div>
-                </div>
-            </form>
-        </div>
+        <form onSubmit={handleSubmit}>
+            <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-lg flex items-center space-x-4">
+                <label className="text-slate-500">Op Stack:</label>
+                <p className="text-slate-500">{viewState.opstack}</p>
+            </div>
+            <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-lg flex items-center space-x-4">
+                <label className="text-slate-500">Co Stack:</label>
+                <p className="text-slate-500">{viewState.costack}</p>
+            </div>
+            <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-lg flex items-center space-x-4">
+                <label className="text-slate-500">User Input:</label>
+                <input
+                    className="bg-slate-100 pl-2"
+                    type="text"
+                    required
+                    value={viewState.input}
+                    onChange={handleInput}
+                />
+            </div>
+        </form>
     );
 }
 

@@ -14,14 +14,16 @@ export default class Machine {
     opstack: Stack;
     costack: Stack;
     compile_definition: (number | string)[] | null;
+    compile_word_name: string | null;
 
     constructor() {
-        this.memory = new Memory(64);
+        this.memory = new Memory(128);
         this.dictionary = new Dictionary(this);
         this.opstack = new Stack();
         this.costack = new Stack();
         this.costack.push(Mode.EXECUTE);
         this.compile_definition = null;
+        this.compile_word_name = null;
     }
 
     executeInputBuffer(input: string) {
@@ -51,16 +53,20 @@ export default class Machine {
         return newAddress;
     }
 
-    overwrite(data: Data, address: number): number {
-        return this.memory.overwrite(data, address);
+    overwrite(newValue: number, address: number): number {
+        return this.memory.overwrite(newValue, address);
     }
 
     read(address: number): Data {
         return this.memory.read(address);
     }
 
-    dumpData(): DataBlock[] {
-        return this.memory.dumpData();
+    dump(): DataBlock[] {
+        const start = performance.now();
+        const ret: DataBlock[] = this.memory.dump();
+        const end = performance.now();
+        console.log("dump in " + (end - start) + " ms");
+        return ret;
     }
 
     opStackString(): string {
@@ -119,6 +125,7 @@ export default class Machine {
         assert(token != null, "Token must not be null");
         const mode: Mode = this.costack.peek();
         const data: Data | null = this.dictionary.getAction(token);
+        //console.log("AZ TOKEN: "+ token +" Mode: " + mode + " data: " + (data ? data.dumpString() : "null"));
         if (
             mode === Mode.EXECUTE ||
             (mode === Mode.COMPILE &&
@@ -153,6 +160,8 @@ export default class Machine {
                 this.execute_colon_word(value);
             } else if (data.isInt() && isInt(value)) {
                 this.opstack.push(value as number);
+            } else if (data.isFloat() && typeof value === 'number') {
+                this.opstack.push(value as number);
             } else if (data.isStr() && typeof value === "string") {
                 this.opstack.push(value as string);
             } else {
@@ -163,6 +172,7 @@ export default class Machine {
                         value
                 );
             }
+            return;
         } else if (mode === Mode.COMPILE) {
             if (this.compile_definition == null) {
                 throw new Error(
@@ -170,6 +180,14 @@ export default class Machine {
                 );
             }
             this.compile_definition.push(token);
+
+            /* TODO set addresses in memory while reading tokens
+            if (this.compile_word_name === null) {
+                this.compile_word_name = token;
+                return;
+            }
+            this.addWordColonName
+*/
         } else if (mode === Mode.CONSTANT) {
             this.opstack.push(token);
             this.dictionary.constInitWord(this);
