@@ -8,7 +8,7 @@ export default class Memory {
     private highestAddress: number;
 
     constructor(size?: number) {
-        this.size = size === undefined ? 64 : size;
+        this.size = size === undefined ? 128 : size;
         this.memory = new Array(this.size);
         this.highestAddress = -1;
     }
@@ -23,50 +23,17 @@ export default class Memory {
         return this.memory[address];
     }
 
-    overwrite(data: Data, address: number): number {
+    overwrite(newValue: number, address: number): number {
         const oldData: Data = this.memory[address];
         if (oldData == null) {
             throw new Error(
                 "Missing data address: " + address + " to overwrite"
             );
-        } else if (data == null) {
-            throw new Error(
-                "Missing new data to overwrite at address: " + address
-            );
-        } else if (oldData.getTypeName() !== data.getTypeName()) {
-            throw new Error(
-                "Overwrite old type: " +
-                    oldData.getTypeName() +
-                    " with new type: " +
-                    data.getTypeName() +
-                    " at address: " +
-                    address
-            );
-        } else if (oldData.getValue() === data.getValue()) {
-            throw new Error(
-                "Overwrite old value: " +
-                    oldData.getValue() +
-                    " with new value: " +
-                    data.getValue() +
-                    " at address: " +
-                    address
-            );
-        } else if (oldData.getValueName() === data.getValueName()) {
-            throw new Error(
-                "Overwrite old value: " +
-                    oldData.getValueName() +
-                    " with new value: " +
-                    data.getValueName() +
-                    " at address: " +
-                    address
-            );
+        } else if (oldData.getValue() === newValue) {
+            console.log("Overwritting old var with same value: " + newValue);
         }
-
-        //data.setAddress(address);
-        //this.memory[address] = data;
-        oldData.setValue(data.getValue());
-
-        return address;
+        oldData.setValue(newValue);
+        return address; // same old address
     }
 
     write(data: Data, address?: number): number {
@@ -77,16 +44,20 @@ export default class Memory {
         if (
             !(
                 (data.isInt() && isInt(value)) ||
+                (data.isStr() && typeof value === "string") ||
+                (data.isFloat() && typeof value === "number") ||
                 (data.isCoreFunc() && typeof value === "function") ||
                 (data.isColonFunc() && Array.isArray(value))
             )
         ) {
             throw new Error(
                 "Memory data: " +
-                    value +
-                    " of type: " +
-                    data.getTypeName() +
-                    " must be a number or function"
+                    data.dump() +
+                    " type: " +
+                    data.getType() +
+                    " native typeof value === " +
+                    typeof data.getValue() +
+                    " must be valid"
             );
         }
         if (address === undefined) {
@@ -98,13 +69,12 @@ export default class Memory {
             Number.isInteger(address) &&
                 address >= 0 &&
                 address < this.memory.length,
-            `Memory address must be a valid integer within bounds: ${address}`
+            `Memory address: ${address} must be a valid integer within bounds: ${this.size}`
         );
 
         const oldData = this.memory[address];
         if (oldData != null) {
-            //throw new Error(
-            console.log(
+            console.error(
                 "Overwriting old data at address: " +
                     address +
                     " old: " +
@@ -118,6 +88,20 @@ export default class Memory {
 
         data.setAddress(address);
         this.memory[address] = data;
+        const bytesize = data.getSize() - 1;
+        if (bytesize < 0) {
+            throw new Error("Data cannot be less than one byte");
+        }
+        this.highestAddress = data.getSize() + this.highestAddress - 1;
+        if (this.highestAddress > this.size) {
+            throw new Error(
+                "Out of Memory. Required: " +
+                    this.highestAddress +
+                    " but only have: " +
+                    this.size +
+                    " bytes of memory"
+            );
+        }
         return address;
     }
 
@@ -138,17 +122,39 @@ export default class Memory {
         return memoryStr;
     }
 
-    dumpData(): DataBlock[] {
-        console.log("Memory.dataDump");
-        const len = Math.min(this.size, this.memory.length, 64);
-        const memarray: DataBlock[] = new Array(len);
-        for (let address = 0; address < len; address++) {
-            const data: Data = this.memory[address];
+    dump(): DataBlock[] {
+        const len = Math.min(this.size, this.memory.length, 512);
+        const memarray: DataBlock[] = new Array();
+        let last_nil_adr = len;
+        let nil_sequence = 0;
+        for (let adr = 0; adr < len && adr < last_nil_adr; adr++) {
+            const data: Data = this.memory[adr];
             if (data == null || !(data instanceof Data)) {
-                memarray.push(createUninitDataBlock(address));
+                nil_sequence++;
+                if (nil_sequence > 7 && last_nil_adr === len) {
+                    last_nil_adr = 16 * Math.floor((adr + 16) / 16);
+                }
+                memarray.push(createUninitDataBlock(adr));
                 continue;
             }
-            memarray.push(data.dumpData());
+            nil_sequence = 0;
+            last_nil_adr = len;
+            const bytesize = data.getSize();
+            if (bytesize < 1 || bytesize > 8) {
+                console.warn(
+                    "Unusual data byte size: " +
+                        bytesize +
+                        " at address: " +
+                        adr +
+                        " size: " +
+                        data.getSize()
+                );
+            }
+
+            if (bytesize > 1) {
+                adr += bytesize - 1;
+            }
+            memarray.push(data.dump());
         }
         return memarray;
     }

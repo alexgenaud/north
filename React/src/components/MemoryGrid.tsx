@@ -1,6 +1,6 @@
+//import React from "react";
 import { DataBlock } from "../../../TypeScript/north/types";
 import MemoryBlock from "./MemoryBlock";
-import "./custom.scss";
 
 interface MemoryArray {
     memory: DataBlock[];

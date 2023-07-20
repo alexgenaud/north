@@ -4,7 +4,7 @@ export enum Mode {
     IGNORE = 3, // can be toggled with EXECUTE in same layer
     BLOCK = 4, // if parent is IGNORED then child layers are blocked
     VARIABLE = 5, // set variable name with next token
-    CONSTANT = 6, // set constant name with next token, value from earlier
+    CONSTANT = "6CONSTANT", // set constant name with next token, value from earlier
     // maybe need COMMENTS
 }
 
@@ -29,4 +29,10 @@ export function assert(expect: boolean, message: string): void {
         console.error(message);
         throw new Error("Assertion failed: " + message);
     }
+}
+
+export function splitToI8Bytes(address: number): { low: number; high: number } {
+    const low = address & 0xff; // Extract the lower 8 bits
+    const high = (address >> 8) & 0xff; // Shift right to get the higher 8 bits and then extract them
+    return { low, high };
 }
