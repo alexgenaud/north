@@ -7,8 +7,6 @@ import { DataBlock } from "./types";
 
 const CONDITIONAL_IGNORE_MODES = [Mode.IGNORE, Mode.BLOCK];
 export default class Machine {
-    private memoryChangeListeners: (() => void)[] = [];
-
     dictionary: Dictionary;
     private memory: Memory;
     opstack: Stack;
@@ -27,22 +25,10 @@ export default class Machine {
     }
 
     executeInputBuffer(input: string) {
-        let isChange = false;
         const tokens = input.trim().split(/\s+/);
         for (const token of tokens) {
             this.execute(token);
-            isChange = true;
         }
-
-        if (isChange) this.notifyMemoryChange();
-    }
-
-    private notifyMemoryChange() {
-        this.memoryChangeListeners.forEach((listener) => listener());
-    }
-
-    public onMemoryChange(callback: () => void) {
-        this.memoryChangeListeners.push(callback);
     }
 
     write(data: Data, address?: number): number {
@@ -125,7 +111,6 @@ export default class Machine {
         assert(token != null, "Token must not be null");
         const mode: Mode = this.costack.peek();
         const data: Data | null = this.dictionary.getAction(token);
-        //console.log("AZ TOKEN: "+ token +" Mode: " + mode + " data: " + (data ? data.dumpString() : "null"));
         if (
             mode === Mode.EXECUTE ||
             (mode === Mode.COMPILE &&
@@ -160,7 +145,7 @@ export default class Machine {
                 this.execute_colon_word(value);
             } else if (data.isInt() && isInt(value)) {
                 this.opstack.push(value as number);
-            } else if (data.isFloat() && typeof value === 'number') {
+            } else if (data.isFloat() && typeof value === "number") {
                 this.opstack.push(value as number);
             } else if (data.isStr() && typeof value === "string") {
                 this.opstack.push(value as string);
@@ -187,7 +172,7 @@ export default class Machine {
                 return;
             }
             this.addWordColonName
-*/
+            */
         } else if (mode === Mode.CONSTANT) {
             this.opstack.push(token);
             this.dictionary.constInitWord(this);

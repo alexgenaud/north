@@ -1,15 +1,11 @@
-import Machine from "../../../TypeScript/north/Machine";
+import machine from "../model/MachineSingleton";
 import { ChangeEvent, FormEvent, useState } from "react";
 
-interface Props {
-    machine: Machine;
-}
-
-function FormInput({ machine }: Props) {
+function FormInput() {
     const [viewState, setViewState] = useState({
         input: "",
         opstack: "",
-        costack: machine.coStackString(),
+        costack: machine.dumpCoStack(),
     });
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -17,11 +13,10 @@ function FormInput({ machine }: Props) {
             machine.executeInputBuffer(viewState.input);
             setViewState({
                 input: "",
-                opstack: machine.opStackString(),
-                costack: machine.coStackString(),
+                opstack: machine.dumpOpStack(),
+                costack: machine.dumpCoStack(),
             });
         }
-        //        e.target.focus();
     };
 
     const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
