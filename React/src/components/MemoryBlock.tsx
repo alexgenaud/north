@@ -1,30 +1,39 @@
-import React from "react";
 import { DataBlock } from "../../../TypeScript/north/types";
 
 interface Prop {
     block: DataBlock;
 }
 
-function MemoryBlock(block: Prop) {
-    const { address, type, value, size } = block.block;
+function MemoryBlock(prop: Prop) {
+    const { address, type, value, size } = prop.block;
     const borderClass = ""; // selected ? "selected border border-dark" : "";
     const colspanClass = size < 2 ? "" : "col-span-" + size + " ";
 
     const valNum: number = isNaN(Number(value)) ? 0 : Number(value);
     const valStr = strToHex(value);
 
+    if (address == 32) {
+        console.log(
+            "MemoryBlock address: " +
+                address +
+                " valNum: " +
+                valNum +
+                " valStr: " +
+                valStr
+        );
+    }
+
     const adrHex = strToHex(address + "");
     return (
-        <div
-            key={address}
-            className={`${colspanClass} xcol-span-${size} memory-block ${borderClass}`}
-        >
-            <div style={byteToBgColor(address + 2560)}>
+        <div className={`${colspanClass} memory-block ${borderClass}`}>
+            <div key={`adr-${address}`} style={byteToBgColor(address + 2560)}>
                 {adrHex} ({address})
                 <br />
                 {type}
             </div>
-            <div style={byteToBgColor(valNum)}>{valStr}</div>
+            <div key={`val-${address}`} style={byteToBgColor(valNum)}>
+                {valStr}
+            </div>
         </div>
     );
 }
