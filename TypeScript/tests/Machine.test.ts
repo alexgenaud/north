@@ -34,16 +34,6 @@ describe('Machine', () => {
         assertExecuteStack('2 IF 2 THEN', '2');
     });
 
-    test('if_nested', () => {
-        assertExecuteStack(": IS_SIX DUP <0 IF DROP 0 ELSE DUP >0 IF 6 = IF 1 ELSE 0 THEN ELSE DROP 0 THEN THEN ;", "")
-        assertExecutePop("-6 IS_SIX", 0)
-        assertExecutePop("0 IS_SIX", 0)
-        assertExecutePop("1 IS_SIX", 0)
-        assertExecutePop("5 IS_SIX", 0)
-        assertExecutePop("6 IS_SIX", 1)
-        assertExecuteStack("7 IS_SIX", "0")
-    });
-
     test('if_else_then_example_if', () => {
         assertExecutePop(": IS_NOT_ZERO DUP IF 7 ELSE 9 THEN ; 0 IS_NOT_ZERO", 9)
         assertExecutePop("1 IS_NOT_ZERO", 7)
@@ -75,14 +65,6 @@ describe('Machine', () => {
         assertExecutePop("0 E_ABS", 0)
         assertExecutePop("4 E_ABS", 4)
         assertExecutePop("-7 E_ABS", 7)
-    });
-
-    test('if_absolute_no_else', () => {
-        assertExecutePop(": M_ABS DUP <0 IF 0 SWAP - THEN ; 6 M_ABS", 6)
-        assertExecutePop("-1 M_ABS", 1)
-        assertExecutePop("0 M_ABS", 0)
-        assertExecutePop("4 M_ABS", 4)
-        assertExecutePop("-7 M_ABS", 7)
     });
 
     test('logical_or', () => {
@@ -138,28 +120,6 @@ describe('Machine', () => {
         assertExecutePop("-1 -2 >", 1)
     });
 
-    test('logical_equal_zero', () => {
-        assertExecuteStack("0 =0", "1")
-        assertExecuteStack("=0", "0")
-        assertExecutePop("=0", 1)
-        assertExecuteStack("", "")
-        assertExecutePop("0 =0", 1)
-        assertExecutePop("1 =0", 0)
-        assertExecutePop("-6 =0", 0)
-    });
-
-    test('logical_less_than_zero', () => {
-        assertExecutePop("-1 <0", 1)
-        assertExecutePop("0 <0", 0)
-        assertExecutePop("1 <0", 0)
-    });
-
-    test('logical_greater_than_zero', () => {
-        assertExecutePop("-1 >0", 0)
-        assertExecutePop("0 >0", 0)
-        assertExecutePop("1 >0", 1)
-    });
-
     test('logical_less_equal_zero', () => {
         assertExecutePop("-1 <=0", 1)
         assertExecutePop("0 <=0", 1)
@@ -179,13 +139,6 @@ describe('Machine', () => {
     test('dup', () => {
         assertExecuteStack("8 7 DUP", "8 7 7")
         assertExecuteStack("-7 DUP",  "8 7 7 -7 -7")
-    });
-
-    test('not', () => {
-        assertExecuteStack("8 0 NOT", "8 -1")
-        assertExecuteStack("DROP DROP 0 DROP 1 NOT", "-2")
-        assertExecutePop("256 NOT", -257)
-        assertExecutePop("1234567890 NOT", -1234567891)
     });
 
     test('over', () => {

@@ -118,11 +118,6 @@ export default class Dictionary {
         m.opstack.push(Math.floor(b / a));
     }
 
-    private absoluteValue(m: Machine): void {
-        const a = m.opstack.pop() as number;
-        m.opstack.push(a >= 0 ? a : -a);
-    }
-
     private mod(m: Machine): void {
         let d = m.opstack.pop() as number;
         assert(
@@ -364,7 +359,9 @@ export default class Dictionary {
 
     private loadCoreWords(): void {
         // 0 no pops
-        for (let i = 0; i <= 2; i++) this.addI8("" + i, i);
+        this.addI8("0", 0);
+        this.addI8("1", 1);
+        this.addI8("PARSER", 0);
 
         // 1 pop
         this.addCoreCondition("IF", this.conditionIf);
@@ -380,19 +377,11 @@ export default class Dictionary {
         this.addCoreFunc("DUP", (m: Machine) =>
             m.opstack.push(m.opstack.peek())
         );
-        this.addCoreFunc("NOT", (m: Machine) =>
-            m.opstack.push(~m.opstack.pop())
-        );
-        this.addCoreFunc("ABS", this.absoluteValue);
-        this.addCoreFunc("=0", (m: Machine) =>
-            m.opstack.push(m.opstack.pop() === 0 ? 1 : 0)
-        );
-        this.addCoreFunc("<0", (m: Machine) =>
-            m.opstack.push(m.opstack.pop() < 0 ? 1 : 0)
-        );
-        this.addCoreFunc(">0", (m: Machine) =>
-            m.opstack.push(m.opstack.pop() > 0 ? 1 : 0)
-        );
+    //    this.addCoreFunc("NOT", (m: Machine) =>
+    //    this.addCoreFunc("ABS", this.absoluteValue);
+    //    this.addCoreFunc("=0", (m: Machine) =>
+    //    this.addCoreFunc("<0", (m: Machine) =>
+    //    this.addCoreFunc(">0", (m: Machine) =>
 
         // 0 no pops
         this.addCoreFunc("PS", (m: Machine) => console.log(m.opstack));
