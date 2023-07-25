@@ -50,8 +50,11 @@ export default class Stack {
         this.stack[this.stack.length - 1] = next;
     }
 
-    peek(index = -1): any {
-        assert(this.stack.length > 0, "Stack must have tokens to peek");
+    public peek(index = -1): any {
+        if (this.stack.length < 1) {
+            console.log("Stack peek empty");
+            return undefined;
+        }
         if (index < 0) {
             index = this.stack.length + index;
         }

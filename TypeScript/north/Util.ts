@@ -4,7 +4,7 @@ export enum Mode {
     IGNORE = 3, // can be toggled with EXECUTE in same layer
     BLOCK = 4, // if parent is IGNORED then child layers are blocked
     VARIABLE = 5, // set variable name with next token
-    CONSTANT = "6CONSTANT", // set constant name with next token, value from earlier
+    CONSTANT = 6, // set constant name with next token, value from earlier
     // maybe need COMMENTS
 }
 
