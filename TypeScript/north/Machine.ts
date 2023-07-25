@@ -24,6 +24,15 @@ export default class Machine {
         this.compile_word_name = null;
     }
 
+    load(wordLoaders: ((m: Machine) => boolean)[]) {
+        let allSuccess: boolean = (wordLoaders && wordLoaders.length > 0);
+        wordLoaders.forEach((loader) => {
+            const success = loader(this);
+            if (!success) allSuccess = false;
+        })
+        return allSuccess;
+    }
+
     executeInputBuffer(input: string) {
         const tokens = input.trim().split(/\s+/);
         for (const token of tokens) {
@@ -108,7 +117,13 @@ export default class Machine {
         if (token == null || (typeof token === "string" && token.length < 1)) {
             return;
         }
-        assert(token != null, "Token must not be null");
+        const parser: number = this.dictionary.getAction("PARSER");
+        const parserAdr: number = this.dictionary.getWordAddress("PARSER");
+        console.log("parser: " + JSON.stringify(parser) +" at address: " + parserAdr);
+        // TODO: call Parser (interpret, compile, etc)
+        // based on PARSER memory data value,
+        // which will point to a core word
+
         const mode: Mode = this.costack.peek();
         const data: Data | null = this.dictionary.getAction(token);
         if (
