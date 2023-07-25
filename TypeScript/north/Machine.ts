@@ -2,6 +2,7 @@ import { isInt, assert, Mode } from "../north/Util";
 import Data from "../north/Data";
 import Dictionary from "../north/Dictionary";
 import Memory from "../north/Memory";
+import Buffer from "../north/Buffer";
 import Stack from "../north/Stack";
 import { DataBlock } from "./types";
 
@@ -11,6 +12,7 @@ export default class Machine {
     private memory: Memory;
     opstack: Stack;
     costack: Stack;
+    inputBuffer: Buffer;
     compile_definition: (number | string)[] | null;
     compile_word_name: string | null;
 
@@ -19,33 +21,39 @@ export default class Machine {
         this.dictionary = new Dictionary(this);
         this.opstack = new Stack();
         this.costack = new Stack();
+        this.inputBuffer = new Buffer();
         this.costack.push(Mode.EXECUTE);
         this.compile_definition = null;
         this.compile_word_name = null;
     }
 
     load(wordLoaders: ((m: Machine) => boolean)[]) {
-        let allSuccess: boolean = (wordLoaders && wordLoaders.length > 0);
+        let allSuccess: boolean = wordLoaders && wordLoaders.length > 0;
         wordLoaders.forEach((loader) => {
             const success = loader(this);
             if (!success) allSuccess = false;
-        })
+        });
         return allSuccess;
     }
 
     executeInputBuffer(input: string) {
         const tokens = input.trim().split(/\s+/);
-        for (const token of tokens) {
-            this.execute(token);
+        this.inputBuffer.push(tokens);
+        if (this.inputBuffer.isEmpty()) return;
+        this.quitLoop();
+    }
+
+    quitLoop() {
+        const parsePtr = this.dictionary.getWordAddress("PARSE") as number;
+        while (!this.inputBuffer.isEmpty()) {
+            const adrOfParser = this.read(parsePtr).getValue() as number;
+            const parser = this.read(adrOfParser).getValue() as (m: Machine) => void
+            parser(this);
         }
     }
 
     write(data: Data, address?: number): number {
-        const newAddress = this.memory.write(data, address);
-        if (address != null && address > 0 && address != newAddress) {
-            throw new Error("Suggested address must match actual set address");
-        }
-        return newAddress;
+        return this.memory.write(data, address);
     }
 
     overwrite(newValue: number, address: number): number {
@@ -57,10 +65,7 @@ export default class Machine {
     }
 
     dump(): DataBlock[] {
-        const start = performance.now();
         const ret: DataBlock[] = this.memory.dump();
-        const end = performance.now();
-        console.log("dump in " + (end - start) + " ms");
         return ret;
     }
 
@@ -117,13 +122,6 @@ export default class Machine {
         if (token == null || (typeof token === "string" && token.length < 1)) {
             return;
         }
-        const parser: number = this.dictionary.getAction("PARSER");
-        const parserAdr: number = this.dictionary.getWordAddress("PARSER");
-        console.log("parser: " + JSON.stringify(parser) +" at address: " + parserAdr);
-        // TODO: call Parser (interpret, compile, etc)
-        // based on PARSER memory data value,
-        // which will point to a core word
-
         const mode: Mode = this.costack.peek();
         const data: Data | null = this.dictionary.getAction(token);
         if (
@@ -188,12 +186,6 @@ export default class Machine {
             }
             this.addWordColonName
             */
-        } else if (mode === Mode.CONSTANT) {
-            this.opstack.push(token);
-            this.dictionary.constInitWord(this);
-        } else if (mode === Mode.VARIABLE) {
-            this.opstack.push(token);
-            this.dictionary.varInitWord(this);
         } else if (CONDITIONAL_IGNORE_MODES.includes(mode)) {
             return;
         } else {

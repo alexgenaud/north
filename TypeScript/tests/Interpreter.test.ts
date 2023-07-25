@@ -59,9 +59,4 @@ describe("Interpreter", () => {
         assertExecuteStack(": X DROP    ; X", "8 107");
     });
 
-    test("new_variable", () => {
-        assertExecutePop("VAR six six @", 0); // 0 unset value
-        assertExecutePop("7 six ! six @", 7);
-        assertExecuteStack("six @ 1 - six ! six @", "6");
-    });
 });
