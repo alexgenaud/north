@@ -12,10 +12,11 @@ describe('Stack', () => {
         expect(stack.pop()).toBe(42);
     });
 
-    test('return undefined for empty stack', () => {
-        // should work, but annoying test output
-        //expect(stack.pop()).toBeUndefined();
+    test('throw exception for empty stack', () => {
         expect(stack.is_empty()).toBe(true);
+        expect(()=>{
+            stack.pop();
+        }).toThrow("must have tokens to pop");
     });
 
     test('return peeked value without popping', () => {

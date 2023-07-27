@@ -1,6 +1,5 @@
 import Machine from '../north/Machine';
-import { wordsMany } from '../north/WordsMany';
-import { wordsOptimised } from '../north/WordsOptimised';
+import { BasicArgTwo } from '../north/core/BasicArgTwo';
 import { INTERPRET } from '../north/parse/INTERPRET';
 import { CONST } from '../north/parse/CONST';
 
@@ -9,8 +8,9 @@ describe('parse/CONST', () => {
 
     beforeEach(() => {
         machine = new Machine();
-        expect(machine.load([INTERPRET, CONST])).toBe(true);
-        expect(machine.load([wordsMany, wordsOptimised])).toBe(true);
+        expect(machine.load(
+            [INTERPRET, CONST, BasicArgTwo]
+        )).toBe(true);
     });
 
     const assertExecuteStack = (execStr: string, expectStack: string) => {
@@ -43,7 +43,5 @@ describe('parse/CONST', () => {
         );
     });
 
-
 });
-
 

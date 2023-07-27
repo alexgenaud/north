@@ -1,8 +1,10 @@
-import Machine from '../north/Machine';
-import { Loadable } from "./types";
+import Machine from '../Machine';
+import { Loadable } from "../types";
 
-export const wordsOptimised: Loadable = (ma: Machine): boolean => {
+export const BasicArgOne: Loadable = (ma: Machine): boolean => {
     const d = ma.dictionary;
+    d.addCoreFunc("DROP", (m: Machine) => m.opstack.pop());
+    d.addCoreFunc("DUP", (m: Machine) => m.opstack.push(m.opstack.peek()));
     d.addCoreFunc("NOT", (m: Machine) =>
         m.opstack.push(~m.opstack.pop())
     );
@@ -16,8 +18,14 @@ export const wordsOptimised: Loadable = (ma: Machine): boolean => {
     d.addCoreFunc("<0", (m: Machine) =>
         m.opstack.push(m.opstack.pop() < 0 ? 1 : 0)
     );
+    d.addCoreFunc("<=0", (m: Machine) =>
+        m.opstack.push(m.opstack.pop() <= 0 ? 1 : 0)
+    );
     d.addCoreFunc(">0", (m: Machine) =>
         m.opstack.push(m.opstack.pop() > 0 ? 1 : 0)
+    );
+    d.addCoreFunc(">=0", (m: Machine) =>
+        m.opstack.push(m.opstack.pop() >= 0 ? 1 : 0)
     );
     return true;
 }

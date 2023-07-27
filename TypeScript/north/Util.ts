@@ -31,7 +31,6 @@ export function isInt(token: any): boolean {
 
 export function assert(expect: boolean, message: string): void {
     if (!expect) {
-        console.error(message);
         throw new Error("Assertion failed: " + message);
     }
 }
@@ -74,7 +73,7 @@ export function assertIntNonNegative(wordName: string, value: any) {
 
 export function assertData(wordName: string, data: Data | null) {
     if (data == null) {
-        throw new Error (`${wordName} expects non null Data`);
+        throw new Error (`${wordName} expects non-null Data`);
     }
     if (! (data instanceof Data)) {
         throw new Error (`${wordName} expects Data but was ${(typeof data)}`);
@@ -103,7 +102,7 @@ export function assertDataInt(wordName: string, data: Data) {
 
 export function assertNonNull(wordName: string, value: any) {
     if (value == null) {
-        throw new Error (`${wordName} expects non null value`);
+        throw new Error (`${wordName} expects non-null value`);
     }
 }
 
