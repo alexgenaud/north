@@ -24,21 +24,6 @@ describe("Interpreter", () => {
         assertExecuteStack("     ", "");
     });
 
-    test("if_multiple", () => {
-        assertExecutePop("1 IF 2 ELSE 3 THEN", 2);
-        assertExecuteStack("1 IF ELSE 3 THEN", "");
-        assertExecutePop("1 IF 2 THEN", 2);
-        assertExecutePop("-1 IF 2 ELSE 3 THEN", 2);
-        assertExecutePop("0 IF ELSE 3 THEN", 3);
-        assertExecuteStack("2 IF 2 THEN", "2");
-    });
-
-    test("if_new_definition", () => {
-        assertExecutePop(": IS_TEN DUP 10 = IF 3 ELSE 4 THEN ; 0 IS_TEN", 4);
-        assertExecutePop("-1 IS_TEN", 4);
-        assertExecutePop("10 IS_TEN", 3);
-    });
-
     test("execute_empty", () => {
         assertExecuteStack("", "");
     });

@@ -20,10 +20,10 @@ describe("Dictionary", () => {
 
         word = "test2";
         dictionary.addColonArray(word, [5, 6, 7]);
-        const dataBack: Data | null = dictionary.getAction(word);
+        const dataBack = dictionary.getAction(word) as Data;
         expect(dataBack).not.toBeNull();
-        expect(dataBack!.isColonFunc()).toBe(true);
-        expect(dataBack!.getValue()).toStrictEqual([5, 6, 7]);
+        expect(dataBack.isColonFunc()).toBe(true);
+        expect(dataBack.getValue()).toStrictEqual([5, 6, 7]);
     });
 
     test("return null for non-existing word", () => {

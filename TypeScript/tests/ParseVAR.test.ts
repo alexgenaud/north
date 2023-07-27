@@ -1,16 +1,17 @@
 import Machine from '../north/Machine';
-import { wordsMany } from '../north/WordsMany';
-import { wordsOptimised } from '../north/WordsOptimised';
+import { BasicArgTwo } from '../north/core/BasicArgTwo';
 import { INTERPRET } from '../north/parse/INTERPRET';
 import { VAR } from '../north/parse/VAR';
+
 
 describe('parse/VAR', () => {
     let machine: Machine;
 
     beforeEach(() => {
         machine = new Machine();
-        expect(machine.load([INTERPRET, VAR])).toBe(true);
-        expect(machine.load([wordsMany, wordsOptimised])).toBe(true);
+        expect(machine.load(
+            [INTERPRET, VAR, BasicArgTwo]
+        )).toBe(true);
     });
 
     const assertExecuteStack = (execStr: string, expectStack: string) => {
@@ -35,5 +36,4 @@ describe('parse/VAR', () => {
     });
 
 });
-
 
