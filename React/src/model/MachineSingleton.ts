@@ -1,4 +1,12 @@
 import Machine from "../../../TypeScript/north/Machine";
+import { INTERPRET } from "../../../TypeScript/north/parse/INTERPRET";
+import { COMPILE } from "../../../TypeScript/north/parse/COMPILE";
+import { CONST } from "../../../TypeScript/north/parse/CONST";
+import { VAR } from "../../../TypeScript/north/parse/VAR";
+import { Condition } from "../../../TypeScript/north/core/Condition";
+import { BasicArgOne } from "../../../TypeScript/north/core/BasicArgOne";
+import { BasicArgTwo } from "../../../TypeScript/north/core/BasicArgTwo";
+
 import {
     DataBlock,
     createUninitDataBlock,
@@ -30,6 +38,7 @@ class Singleton {
 
     private constructor() {
         console.log("Singleton.constructor");
+        this.forth.load([INTERPRET, COMPILE, CONST, VAR, Condition, BasicArgOne, BasicArgTwo]);
         this.updateMemory();
     }
 
