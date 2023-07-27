@@ -1,7 +1,7 @@
-import { isInt, Mode, assert } from "../north/Util";
 import Machine from '../north/Machine';
+import { Loadable } from "./types";
 
-export const wordsOptimised = (ma: Machine): boolean => {
+export const wordsOptimised: Loadable = (ma: Machine): boolean => {
     const d = ma.dictionary;
     d.addCoreFunc("NOT", (m: Machine) =>
         m.opstack.push(~m.opstack.pop())

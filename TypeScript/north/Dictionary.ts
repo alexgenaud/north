@@ -1,7 +1,6 @@
-import { isInt, Mode, assert } from "../north/Util";
 import Machine from "../north/Machine";
 import Data from "../north/Data";
-import { DataType, getTypeStr } from "./types";
+import { DataType, getTypeStr, Func } from "./types";
 
 export default class Dictionary {
     private core: { [word: string]: number[] };
@@ -10,24 +9,17 @@ export default class Dictionary {
     constructor(machine: Machine) {
         this.core = {};
         this.machine = machine;
-        this.loadCoreWords();
     }
 
-    public addCoreCondition(
-        word: string,
-        action: (m: Machine) => void
-    ): number {
+    public addCoreCondition(word: string, action: Func): number {
         return this.addWordData(word, new Data(action, DataType.f_c, word));
     }
 
-    public addCoreImmediate(
-        word: string,
-        action: (m: Machine) => void
-    ): number {
+    public addCoreImmediate(word: string, action: Func): number {
         return this.addWordData(word, new Data(action, DataType.f_i, word));
     }
 
-    public addCoreFunc(word: string, action: (m: Machine) => void): number {
+    public addCoreFunc(word: string, action: Func): number {
         return this.addWordData(word, new Data(action, DataType.f_n, word));
     }
 
@@ -97,8 +89,6 @@ export default class Dictionary {
         return actionList ? actionList[actionList.length - 1] : null;
     }
 
-    private loadCoreWords(): void {}
-
     toString(): string {
         const indent = "";
         let result = "";
@@ -106,13 +96,13 @@ export default class Dictionary {
             result += `${indent}${key}: `;
             if (Array.isArray(value)) {
                 const formattedItems = value.map((item) =>
-                    typeof item === "function" ? "call" : String(item)
+                    typeof item === "function" ? "func" : String(item)
                 );
                 result += `[ ${formattedItems.join(", ")} ]`;
             } else if (typeof value === "object") {
                 result += "dict\n";
             } else if (typeof value === "function") {
-                result += "call\n";
+                result += "func\n";
             } else {
                 result += String(value);
             }

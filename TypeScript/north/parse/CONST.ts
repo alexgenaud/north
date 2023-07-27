@@ -1,38 +1,25 @@
-import { assert } from "../Util";
+import { assertFuncOpIn, assertInt } from "../Util";
 //import Data from '../Data';
 import Machine from '../Machine';
+import { Loadable, Func } from "../types";
 
-export const CONST = (ma: Machine): boolean => {
+export const CONST: Loadable = (ma: Machine): boolean => {
     // 220 CONSTANT LIMIT
     // The word LIMIT returns its value not its address
-    function initCONST(m: Machine): void {
-        const i8parserAdr = d.getWordAddress("PARSE");
-        if (i8parserAdr == null) throw new Error("PARSE flag not preset");
-        const i8ParserCoreAdr = d.getWordAddress("P_CONST");
-        if (i8ParserCoreAdr == null || i8ParserCoreAdr === 0) throw new Error("P_CONST not defined");
-        m.overwrite(i8ParserCoreAdr, i8parserAdr);
+    const initCONST: Func = function(m: Machine): void {
+        m.overwrite(d.getWordAddress("P_CONST") as number,
+                d.getWordAddress("PARSE") as number);
     }
 
-    function parseCONST(m: Machine): void {
-        assert(
-            m.inputBuffer.length > 0,
-            `m.inputBuffer must have at least one element to shift. Has only ${m.inputBuffer.length}`
-        );
-        assert(
-            m.opstack.length > 0,
-            `m.opstack must have at least one element to pop. Has only ${m.opstack.length}`
-        );
-        //m.dictionary.addNumber(m.opstack.pop(),
-        //    m.opstack.pop()); // name, early value
+    const parseCONST: Func = function(m: Machine): void {
+        assertFuncOpIn(m, "P_CONST", 1, 1);
+        assertInt("P_CONST", m.opstack.peek());
 
-        // -- 5 CONST V
+        // -- 5 CONST V -- (op.pop) (this func) (in.shift)
         m.dictionary.addNumber(m.inputBuffer.shift() as string, // name from input
             m.opstack.pop()); // early value from op stack
-
-        const i8parserAdr = d.getWordAddress("PARSE");
-        if (i8parserAdr == null) throw new Error("PARSE flag not preset");
         m.overwrite(d.getWordAddress("P_INTERPRET") as number,
-            i8parserAdr);
+                d.getWordAddress("PARSE") as number);
     }
 
     const d = ma.dictionary;

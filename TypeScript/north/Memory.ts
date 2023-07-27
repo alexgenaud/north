@@ -1,4 +1,4 @@
-import { isInt, assert } from "../north/Util";
+import { isInt, assertData, assertIntRangeInclusive } from "../north/Util";
 import { DataBlock, createUninitDataBlock } from "../north/types";
 import Data from "../north/Data";
 
@@ -14,22 +14,14 @@ export default class Memory {
     }
 
     read(address: number): Data {
-        assert(
-            Number.isInteger(address) &&
-                address >= 0 &&
-                address < this.memory.length,
-            `Memory address must be a valid integer within bounds: ${address}`
-        );
+        assertIntRangeInclusive("Memory.read", address, 0, this.memory.length - 1);
         return this.memory[address];
     }
 
     overwrite(newValue: number, address: number): number {
         const oldData: Data = this.memory[address];
-        if (oldData == null) {
-            throw new Error(
-                "Missing data address: " + address + " to overwrite"
-            );
-        } else if (oldData.getValue() === newValue) {
+        assertData("Memory.overwrite", oldData);
+        if (oldData.getValue() === newValue) {
             console.log("Overwritting old var with same value: " + newValue);
         }
         oldData.setValue(newValue);
@@ -37,9 +29,7 @@ export default class Memory {
     }
 
     write(data: Data, address?: number): number {
-        if (data == null || data.getValue() == null) {
-            throw new Error("Memory data must not be null");
-        }
+        assertData("Memory.write", data);
         const value = data.getValue();
         if (
             !(
@@ -65,13 +55,10 @@ export default class Memory {
         } else if (address > this.highestAddress) {
             this.highestAddress = address;
         }
-        assert(
-            Number.isInteger(address) &&
-                address >= 0 &&
-                address < this.memory.length,
-            `Memory address: ${address} must be a valid integer within bounds: ${this.size}`
-        );
-
+        const bytesize = data.getSize();
+        assertIntRangeInclusive("Memory.write", bytesize, 1, 8);
+        assertIntRangeInclusive("Memory.write",
+            address, 0, this.memory.length - bytesize);
         const oldData = this.memory[address];
         if (oldData != null) {
             console.error(
@@ -85,14 +72,9 @@ export default class Memory {
                 data
             );
         }
-
         data.setAddress(address);
         this.memory[address] = data;
-        const bytesize = data.getSize() - 1;
-        if (bytesize < 0) {
-            throw new Error("Data cannot be less than one byte");
-        }
-        this.highestAddress = data.getSize() + this.highestAddress - 1;
+        this.highestAddress = bytesize + this.highestAddress - 1;
         if (this.highestAddress > this.size) {
             throw new Error(
                 "Out of Memory. Required: " +
@@ -124,7 +106,7 @@ export default class Memory {
 
     dump(): DataBlock[] {
         const len = Math.min(this.size, this.memory.length, 512);
-        const memarray: DataBlock[] = new Array();
+        const memarray: DataBlock[] = [];
         let last_nil_adr = len;
         let nil_sequence = 0;
         for (let adr = 0; adr < len && adr < last_nil_adr; adr++) {
@@ -150,7 +132,6 @@ export default class Memory {
                         data.getSize()
                 );
             }
-
             if (bytesize > 1) {
                 adr += bytesize - 1;
             }
