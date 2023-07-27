@@ -1,10 +1,10 @@
-import { isInt, assert, Mode } from "../north/Util";
+import { isInt, assertInt, assertData, Mode } from "../north/Util";
 import Data from "../north/Data";
 import Dictionary from "../north/Dictionary";
 import Memory from "../north/Memory";
 import Buffer from "../north/Buffer";
 import Stack from "../north/Stack";
-import { DataBlock } from "./types";
+import { DataBlock, Loadable, Func } from "./types";
 
 const CONDITIONAL_IGNORE_MODES = [Mode.IGNORE, Mode.BLOCK];
 export default class Machine {
@@ -27,9 +27,9 @@ export default class Machine {
         this.compile_word_name = null;
     }
 
-    load(wordLoaders: ((m: Machine) => boolean)[]) {
+    load(wordLoaders: Loadable[]) {
         let allSuccess: boolean = wordLoaders && wordLoaders.length > 0;
-        wordLoaders.forEach((loader) => {
+        wordLoaders.forEach((loader: Loadable) => {
             const success = loader(this);
             if (!success) allSuccess = false;
         });
@@ -47,7 +47,7 @@ export default class Machine {
         const parsePtr = this.dictionary.getWordAddress("PARSE") as number;
         while (!this.inputBuffer.isEmpty()) {
             const adrOfParser = this.read(parsePtr).getValue() as number;
-            const parser = this.read(adrOfParser).getValue() as (m: Machine) => void
+            const parser = this.read(adrOfParser).getValue() as Func
             parser(this);
         }
     }
@@ -79,20 +79,9 @@ export default class Machine {
 
     execute_colon_word(address_list: number[]): void {
         for (const address of address_list) {
-            assert(
-                typeof address === "number",
-                `Executed colon word address: ${address} must be number`
-            );
+            assertInt("EXEC : word", address);
             const data: Data = this.memory.read(address);
-            assert(
-                data != null && data instanceof Data,
-                `Data at address: ${address} must exist in memory`
-            );
-            assert(
-                data.getValue() != null,
-                `Data at address: ${address} exists but has no value`
-            );
-
+            assertData("EXEC : word", data);
             const value = data.getValue();
             const mode: Mode = this.costack.peek();
             if (
@@ -101,7 +90,6 @@ export default class Machine {
             ) {
                 continue;
             }
-
             if (data.isFunc() && typeof value === "function") {
                 value(this);
             } else if (data.isInt() && typeof value === "number") {
@@ -151,7 +139,6 @@ export default class Machine {
                     `Null action.value of token: ${token}. Action data: ${data}`
                 );
             }
-
             if (data.isCoreFunc() && typeof value === "function") {
                 value(this);
             } else if (data.isColonFunc() && Array.isArray(value)) {
@@ -178,7 +165,6 @@ export default class Machine {
                 );
             }
             this.compile_definition.push(token);
-
             /* TODO set addresses in memory while reading tokens
             if (this.compile_word_name === null) {
                 this.compile_word_name = token;

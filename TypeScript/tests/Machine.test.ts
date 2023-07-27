@@ -238,7 +238,7 @@ describe("Machine", () => {
             ?.getValue() as Function;
         expect(() => {
             divInt(machine);
-        }).toThrowError("Divisor must be non-zero int");
+        }).toThrowError("non-zero");
     });
 
     test("should throw an error when numerator not a number", () => {
@@ -249,7 +249,7 @@ describe("Machine", () => {
             ?.getValue() as Function;
         expect(() => {
             divInt(machine);
-        }).toThrowError("Numerator must be a number");
+        }).toThrowError("integer");
     });
 
     test("machine_multiply", () => {

@@ -1,9 +1,10 @@
-import { isInt, Mode, assert } from "../north/Util";
-import Machine from "../north/Machine";
-import { DataType } from "./types";
+import { isInt, Mode, assert, assertInt, assertIntNonZero, assertData, assertFuncOp } from "./Util";
+import Machine from "./Machine";
+import Data from "./Data";
+import { DataType, Loadable, Func } from "./types";
 
-export const wordsMany = (ma: Machine): boolean => {
-    function conditionIf(m: Machine): void {
+export const wordsMany: Loadable = (ma: Machine): boolean => {
+    const conditionIf: Func = function(m: Machine): void {
         const current = m.costack.peek();
         if (current === Mode.IGNORE || current === Mode.BLOCK) {
             m.costack.push(Mode.BLOCK);
@@ -14,7 +15,7 @@ export const wordsMany = (ma: Machine): boolean => {
         }
     }
 
-    function conditionElse(m: Machine): void {
+    const conditionElse: Func = function(m: Machine): void {
         const current = m.costack.peek();
         if (current === Mode.IGNORE) {
             m.costack.toggle(Mode.EXECUTE);
@@ -23,7 +24,7 @@ export const wordsMany = (ma: Machine): boolean => {
         }
     }
 
-    function conditionThen(m: Machine): void {
+    const conditionThen: Func = function(m: Machine): void {
         if (m.costack.peek() === Mode.COMPILE) {
             throw new Error(
                 "Executed condition must be from EXECUTE or IGNORE but not COMPILE mode"
@@ -32,7 +33,7 @@ export const wordsMany = (ma: Machine): boolean => {
         m.costack.pop(); // if EXECUTE else IGNORE else EXECUTE
     }
 
-    function compileStart(m: Machine): void {
+    const compileStart: Func = function(m: Machine): void {
         assert(
             m.costack.peek() === Mode.EXECUTE && m.compile_definition === null,
             "Start compilation from EXECUTE mode with no definition list"
@@ -42,7 +43,7 @@ export const wordsMany = (ma: Machine): boolean => {
         m.compile_word_name = null;
     }
 
-    function compileEnd(m: Machine): void {
+    const compileEnd: Func = function(m: Machine): void {
         if (
             m.costack.peek() !== Mode.COMPILE ||
             m.compile_definition == null ||
@@ -62,7 +63,7 @@ export const wordsMany = (ma: Machine): boolean => {
                     "Compiled colon word must contain non-empty numbers or words"
                 );
             }
-            const address = m.dictionary.getWordAddress(token);
+            const address = m.dictionary.getWordAddress(token) as number;
             if (address === null && isInt(token)) {
                 const newAddress = m.dictionary.addI8(
                     token,
@@ -71,25 +72,12 @@ export const wordsMany = (ma: Machine): boolean => {
                 addressList.push(newAddress);
                 continue;
             }
-            if (typeof address !== "number") {
-                throw new Error("Extant action must have number address");
-            }
-            const data = m.dictionary.getAction(token);
-            if (data == null || data.getValue() == null) {
-                throw new Error(
-                    `Defined word: ${token} with address: ${address} must have data`
-                );
-            }
+            assertInt("EXEC : compile end", address)
+
+            const data = m.dictionary.getAction(token) as Data;
+            assertData("EXEC : compile end", data);
+
             const value = data.getValue();
-            if (
-                typeof value !== "number" &&
-                !Array.isArray(value) &&
-                typeof value !== "function"
-            ) {
-                throw new Error(
-                    `Word ${token} action must be a number, an array, or a function`
-                );
-            }
             if (data.isCoreFunc() && typeof value === "function") {
                 addressList.push(address);
             } else if (data.isInt() && typeof value === "number") {
@@ -112,32 +100,20 @@ export const wordsMany = (ma: Machine): boolean => {
         }
     }
 
-
-
-    function divideInt(m: Machine): void {
-        const a = m.opstack.pop() as number;
-        if (typeof a !== "number" || a === 0) {
-            throw new Error(`Divisor must be non-zero int. Was ${a}`);
-        }
-        const b = m.opstack.pop() as number;
-        if (typeof b !== "number") {
-            throw new Error(`Numerator must be a number. Was ${b}`);
-        }
-        m.opstack.push(Math.floor(b / a));
+    const divideInt: Func = function(m: Machine): void {
+        assertFuncOp(m, "/", 2);
+        assertInt("/", m.opstack.peek(-2));
+        assertIntNonZero("/", m.opstack.peek(-1));
+        m.opstack.push(Math.floor(m.opstack.pop(-2) / m.opstack.pop()));
     }
 
-    function mod(m: Machine): void {
+    const mod: Func = function(m: Machine): void {
+        assertFuncOp(m, "MOD", 2);
+        assertInt("MOD", m.opstack.peek(-2));
+        assertIntNonZero("MOD", m.opstack.peek(-1));
         let d = m.opstack.pop() as number;
-        assert(
-            typeof d === "number" && isInt(d) && d !== 0,
-            "Modulo divisor must be non-zero number. Was ${d}"
-        );
         if (d < 0) d = -d;
         let n = m.opstack.pop() as number;
-        assert(
-            typeof n === "number" && isInt(n),
-            "Modulo numerator must be a number. Was ${n}"
-        );
         if (n < 0) n += d * n * -1;
         m.opstack.push((n % d) + 0); // -0 is possible ! :o
     }

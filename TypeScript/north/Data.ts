@@ -4,11 +4,11 @@ import {
     DataTypeStr,
     getTypeStr,
     isI16Array,
+    Func
 } from "./types";
-import Machine from "../north/Machine";
 
 export default class Data {
-    private value: ((m: Machine) => void) | number | number[] | string = 0;
+    private value: Func | number | number[] | string = 0;
     private type: DataType = DataType.nil;
     private meta = "";
     private address = 0;
@@ -17,7 +17,7 @@ export default class Data {
 
     constructor(
         value: // must be set at construction
-        ((m: Machine) => void) | boolean | number | number[] | string = 0,
+        Func | boolean | number | number[] | string = 0,
         type = DataType.nil, // often suggestion, but _i, _c, i8, i16, f64 should be set
         meta = "", // often only function word name
         address = 0 // often unknown until set
@@ -164,9 +164,7 @@ export default class Data {
         return this.length;
     }
 
-    public setValue(
-        value: ((m: Machine) => void) | number | number[] | string
-    ) {
+    public setValue(value: Func | number | number[] | string) {
         if (typeof value !== typeof this.value) {
             console.error(
                 "SetValue: " +
