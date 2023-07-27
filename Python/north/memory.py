@@ -1,6 +1,6 @@
 class Memory:
     def __init__(self, size=None):
-        self.size = 42 if size is None else size
+        self.size = 128 if size is None else size
         self.memory = [0] * self.size
         self.highest_address = -1
 
