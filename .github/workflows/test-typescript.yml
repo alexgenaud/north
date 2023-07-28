@@ -1,0 +1,28 @@
+name: Test TypeScript
+
+on:
+  push:
+    branches: [ "master", "dev" ]
+
+permissions:
+  contents: read
+
+jobs:
+  typescript-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout TypeScript code
+        uses: actions/checkout@v3
+
+      - name: Setup TypeScript Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.3.1
+
+      - name: Install TypeScript dependencies
+        run: yarn --cwd TypeScript
+
+      - name: Run TypeScript Jest tests
+        run: yarn --cwd TypeScript test
+
