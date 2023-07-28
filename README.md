@@ -3,15 +3,14 @@
 North is a Forth implementation in
 [Python](Python/README.md),
 [TypeScript](TypeScript/README.md),
-TypeScript, and soon
-perhaps additional languages such
-as WAT (WebAssembly Text) and/or Zig.
+and soon additional languages
+such as WAT (WebAssembly Text) and/or Zig.
 
-![screenshot of React memory](https://github.com/alexgenaud/north/blob/web/North-rx.png "Screenshot")
+![screenshot of React memory](https://github.com/alexgenaud/north/blob/master/North-rx.png "Screenshot")
 
 A React app is maintained in the root
-of this git repository. An
-[earlier live demo](https://alexgenaud.github.io/north/)
+of this git repository. A
+[live demo](https://alexgenaud.github.io/north/)
 graphically displays emulated
 Forth runtime memory.
 

@@ -2,8 +2,7 @@ name: Test Python and TypeScript
 
 on:
   push:
-    branches: [ "master", "dev", "inc_typescript" ]
-    pull_request: [ "master", "dev", "inc_typescript" ]
+    branches: [ "master", "dev" ]
 
 permissions:
   contents: read
