@@ -1,4 +1,4 @@
-import { DataBlock } from "../../../TypeScript/north/types";
+import { DataBlock } from "../../TypeScript/north/types";
 
 interface Prop {
     block: DataBlock;

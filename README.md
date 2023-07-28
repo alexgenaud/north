@@ -1,136 +1,108 @@
 # North, the Forth from Norway
 
-North is a forth implementation in Python, TypeScript,
-and perhaps additional languages such as WAT
-(WebAssembly Text) and/or Zig.
+North is a Forth implementation in
+[Python](Python/README.md),
+[TypeScript](TypeScript/README.md),
+TypeScript, and soon
+perhaps additional languages such
+as WAT (WebAssembly Text) and/or Zig.
+
+![screenshot of React memory](https://github.com/alexgenaud/north/blob/web/North-rx.png "Screenshot")
+
+A React app is maintained in the root
+of this git repository. An
+[earlier live demo](https://alexgenaud.github.io/north/)
+graphically displays emulated
+Forth runtime memory.
+
+The Python implementation makes a convenient
+command line tool, programmable calculator.
 
 ## Data structures
 
-Dictionary is a hash map (Object {}) of words pointing to a
-LIFO collision list of definitions.
+Memory is represented as a byte array,
+16-bit addresses pointing to 8-bit locations.
 
-Definitions are int pointers to Memory.
+Dictionary is a hash map (Object {}) of words
+pointing to a LIFO collision list of definitions.
+The Dictionary will be, but not yet, displayed
+within volatile runtime memory.
 
-Memory is an array (Python list []) of int, str, callable/function,
-or array/list (this may be converted to a lower-level data structure,
-particularly if/when implemented in WebAssembly).
+All Forth function word definitions
+are 16-bit pointers to Memory.
 
-A forth word definition (function) may be just an int
-(a mutable constant, what? well for example the word "4" can be defined
-as 5), or a callable (Python), function (Javascript), or list/array.
-A list/array is a "user defined word" whose elements are all int memory
-addresses (to int, primitive function, or another user-defined list of
-addresses).
-
-Strings. Not yet implemented, but all strings will be assumed UTF-8,
-and will be accessed from memory much like defined ints
-(in much the same way as strings are passed to functions in
-WebAssembly, pointers to an array in memory).
-
-## Implemented
-
- - Compilation between words ":" and ";" implemented as primitive forth words.
- - MOD primitive is defined such as the -13 12 MOD == -1 12 MOD == 11 12 MOD == 11
- - nested IF/ELSE/THEN blocks.
- - 53 unit tests, paralleled in two languages (Python and Typescript)
+Data is typed in North (at this time).
+This contrasts traditional
+Forth, which is most often losely typed
+(or not typed at all). North intends to support
+a subset and best of JS, WASM, Python datatypes,
+such as i8, i16, f64, bigInt, UTF-8 strings,
+native functions, and
+forth words (compiled as i16 addresses).
 
 ## TODO
- - Type, over- and underflow violations are strictly enforced through assertions, but not gracefully in either interactive nor batch modes.
- - Defined words and pop/pushed int implemented, but not VARIABLE.
+ - Graceful error handling (over- and underflow, type violations, divide by zero) must not halt the runtime
  - LOOP, DO are not implemented
- - Implement minimum primitive words, separate additional forth in forth from optimized functions (will accelerate implementation in additional lagnuages)
- - Various front-ends (curently stable CLI, unstable React)
+ - Support more ANS words
+ - Do more of the Forth-way
+ - Bring Python up to the TypeScript level
  - Unit tests in Forth itself
- - Consider scoped/call-stack variables (in iterations of loops and/or recursion)
- - Optimize data structures
-   - I cannot see why the word-definition list should keep more than one or two definitions. Consider leaky LIFO bucket.
-   - It should be possible to scan whether addresses are unreachable (fromearlier word definitions that are uncallable), and thus garbage collected.
-   - INLINE compilation (very easy: flatten memory lists, rather than reference another definition in memory)
-   - Consider multiple memories or different memory areas. For example, perhaps 00xx for int, 01xx for strings, 10xx for lists (user-defined word definitions), 11xx for optimized primitive definitions.
+ - Optimize dictionary
+ - Separate memory areas (core vs user defined words)
+ - Consider leaky LIFO definition bucket.
+ - Scan unreachable addresses, primitive garbage collection.
+ - INLINE vs REFERENCE compilation (easy)
+ - Data type/size by memory address prefix.
 
 
-## North 
+## Intensions 
 
-I intend to write a reference standard North by implementing
-the same concepts, words, structures in several languages and environments.
-Validation only requires that the same FORTH tests pass.
-Though the data structures and implementations should rhyme.
-We might as well optimize for each given target language and environment.
+Harder to write my forth, but probably will be very easy to write a third forth.
+
+Portabile to different languages or environments.
+
 I would like North to run optimally in raw vanilla WASM,
-which will then likely influence
-all other implementations (in high-level languages and virtual machines).
+which will then likely back-influence all other implementations.
+
+# Development
+
+## Helpful /TypeScript/ commands
+
+    yarn test
+    yarn tsc
+
+
+## Helpful React (root) commands
+
+    yarn tailwindcss -i src/input.css -o dist/output.css --watch
+    yarn run dev
+
+Vite Static Deploy
+https://vitejs.dev/guide/static-deploy.html
+
+    yarn vite build
+    yarn vite preview
 
 ## Run the Python implementation from shell
 
-Tested in Ubuntu Bash and Mac Zsh.
-Assumes python3 is installed (and so named, try `which python3`).
-$PROJECT is a location (for example /Users/anatta/Code/).
-Added to ~/.zshrc :
-
-```
-if [[ -d "${PATH_TO_NORTH_PROJECT}/Python" ]]; then
-    export PYTHONPATH="$PYTHONPATH:${PATH_TO_NORTH_PROJECT}/Python"
-fi
-alias north='/opt/homebrew/bin/python3 -m north.shell'
-```
-
-Assuming python and PROJECT exist with proper paths, then the following interactive shell should work:
-
-```
-$ north
-Welcome to North shell, the Forth from the North! (type 'quit' to quit)
-1 2 +
-PS
-3
-quit
-```
-
-And for non-interactively:
-
-```
-$ echo "1 2 + " | north 10 +
-13
-```
-
-
-### Run all tests (by example)
-
-We can run the same sh script (`sh run.sh tests`)
-to run all North Python tests, thusly:
-
-```
-$ sh run.sh tests
-Running all tests in tests/
-..............................................
-----------------------------------------------------------------------
-Ran 46 tests in 0.002s
-
-OK
-```
-
-### Stream stdin and/or arguments
-
-`echo 1 2 + | python3 -m north.shell 3 + 4 + | sed s:0:5: | python3 -m north.shell "4 *"`
-
-Or perhaps more elegant with an alias or executable:
-
 ```
 $ alias north='python3 -m north.shell'
+
 $ echo 1 2 + | north 3 + 4 + | sed s:0:5: | north "4 *"
 60
 ```
 
+See [Python North][Python/README.md] for more details
+
 # License
 
-Forth has been used by NASA on critical missions.
+Forth has been used by NASA and ESA on critical missions.
 North is currently not ready for space missions.
 
 For all the legal types out there,
 consider this MIT (or BSD0 or OpenBSD ISC) licensed.
 I'd appreciate attribution. I accept no liability and offer no warranty.
 Otherwise do whatever you want with North at your own risk.
-
-
 
 ```
 (c) 2023 Alexander E Genaud

@@ -7,6 +7,7 @@ import sass from 'sass'
 
 export default defineConfig({
   plugins: [react()],
+    base: "/north/",
   css: {
     preprocessorOptions: {
       scss: {

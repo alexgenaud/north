@@ -1,4 +1,4 @@
-# North, the Forth from Norway
+# North Py, the Forth from Norway, in Python
 
 North is a forth implementation in many languages.
 This sub-project is written in Python.
@@ -16,7 +16,9 @@ to finish (`quit`):
 
 ```
 $ sh run.sh
-Welcome to North shell, the Forth from the North! (type 'quit' to quit)
+Welcome to North shell,
+the Forth from the North!
+(type 'quit' to quit)
 1 2 +
 PS
 3
@@ -46,8 +48,41 @@ Or perhaps more elegant with an alias or executable:
 
 ```
 $ alias north='python3 -m north.shell'
+
 $ echo 1 2 + | north 3 + 4 + | sed s:0:5: | north "4 *"
 60
+```
+
+## Consider adding to .bashrc or .zshrc
+
+Tested in Ubuntu Bash and Mac Zsh.
+Assumes python3 is installed (and so named, try `which python3`).
+$PROJECT is a location (for example /Users/anatta/Code/).
+Added to ~/.zshrc :
+
+```
+if [[ -d "${PATH_TO_NORTH_PROJECT}/Python" ]]; then
+    export PYTHONPATH="$PYTHONPATH:${PATH_TO_NORTH_PROJECT}/Python"
+fi
+alias north='/opt/homebrew/bin/python3 -m north.shell'
+```
+
+Assuming python and PROJECT exist with proper paths, then the following interactive shell should work:
+
+```
+$ north
+Welcome to North shell, the Forth from the North! (type 'quit' to quit)
+1 2 +
+PS
+3
+quit
+```
+
+And for non-interactively:
+
+```
+$ echo "1 2 + " | north 10 +
+13
 ```
 
 ## License

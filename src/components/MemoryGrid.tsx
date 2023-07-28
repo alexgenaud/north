@@ -1,7 +1,7 @@
 import MemoryBlock from "./MemoryBlock";
 import machine from "../model/MachineSingleton";
 import { useEffect, useState } from "react";
-import { DataBlock } from "../../../TypeScript/north/types";
+import { DataBlock } from "../../TypeScript/north/types";
 
 function MemoryGrid() {
     console.log("MemoryGrid constructor");

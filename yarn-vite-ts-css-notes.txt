@@ -1,0 +1,29 @@
+yarn run dev
+yarn tailwindcss -i src/input.css -o dist/output.css --watch
+
+# deprecated
+# was npx tailwindcss -i ./src/input.css -o ./dist/output.css --watch
+
+Vite Static Deploy
+https://vitejs.dev/guide/static-deploy.html
+
+yarn vite build
+yarn vite preview
+
+
+Local:
+
+    cd "${NORTH}/TypeScript"
+    rm -rf dist/[a-zA-Z0-9]*
+    yarn test
+      # runs all tests/*.test.ts
+      # dist remains empty
+
+
+
+    cd "${NORTH}/React"
+    rm -rf dist/[a-zA-Z0-9]*
+    yarn tailwindcss -i src/input.css -o dist/output.css
+    yarn vite build
+    yarn vite preview
+    
