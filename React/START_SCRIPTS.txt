@@ -1,5 +1,0 @@
-yarn run dev
-yarn tailwindcss -i src/input.css -o dist/output.css --watch
-
-# deprecated
-# was npx tailwindcss -i ./src/input.css -o ./dist/output.css --watch

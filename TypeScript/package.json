@@ -4,6 +4,11 @@
     "description": "North is a forth interpretter and machine emulator written in typescript",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "repository": {
+        "url": "https://github.com/alexgenaud/north",
+        "type": "git"
+    },
+    "author": "Alexander E Genaud <alex@genaud.net>",
     "license": "MIT",
     "files": [
         "/dist"

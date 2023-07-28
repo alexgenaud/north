@@ -1,16 +1,16 @@
-import Machine from "../../../TypeScript/north/Machine";
-import { INTERPRET } from "../../../TypeScript/north/parse/INTERPRET";
-import { COMPILE } from "../../../TypeScript/north/parse/COMPILE";
-import { CONST } from "../../../TypeScript/north/parse/CONST";
-import { VAR } from "../../../TypeScript/north/parse/VAR";
-import { Condition } from "../../../TypeScript/north/core/Condition";
-import { BasicArgOne } from "../../../TypeScript/north/core/BasicArgOne";
-import { BasicArgTwo } from "../../../TypeScript/north/core/BasicArgTwo";
+import Machine from "../../TypeScript/north/Machine";
+import { INTERPRET } from "../../TypeScript/north/parse/INTERPRET";
+import { COMPILE } from "../../TypeScript/north/parse/COMPILE";
+import { CONST } from "../../TypeScript/north/parse/CONST";
+import { VAR } from "../../TypeScript/north/parse/VAR";
+import { Condition } from "../../TypeScript/north/core/Condition";
+import { BasicArgOne } from "../../TypeScript/north/core/BasicArgOne";
+import { BasicArgTwo } from "../../TypeScript/north/core/BasicArgTwo";
 
 import {
     DataBlock,
     createUninitDataBlock,
-} from "../../../TypeScript/north/types";
+} from "../../TypeScript/north/types";
 
 class Singleton {
     private static instance: Singleton;

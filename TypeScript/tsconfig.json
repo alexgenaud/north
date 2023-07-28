@@ -4,6 +4,7 @@
     "outDir": "./dist",
     "module": "commonjs", // commonjs node, esnext browser
     "target": "ES2020",
+    "removeComments": true,
     "composite": true,
     "sourceMap": true,
     "allowJs": true,
@@ -17,16 +18,11 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "paths": {
-      "@/*": [
-        "./north/*"
-      ]
-    }
   },
   "include": [
-    "north/*.ts"
-  ],
+        "north/**/*.ts"
+    ],
   "exclude": [
-    "node_modules"
+        "node_modules", "tests"
   ]
 }
