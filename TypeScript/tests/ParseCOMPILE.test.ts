@@ -24,7 +24,7 @@ describe("parse/COMPILE", () => {
         expect(machine.opstack.pop()).toBe(expectPop);
     };
 
-    test.only("compile_number_no_definition", () => {
+    test("compile_number_no_definition", () => {
         assertExecuteStack(": 7 ;", ""); // word name 7 with no definition
         assertExecuteStack("7", ""); // execute 7 does nothing
         assertExecuteStack("5", "5"); // whereas number 5 pushes 5 to stack
