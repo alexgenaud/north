@@ -2,7 +2,7 @@ name: Test Python
 
 on:
   push:
-    branches: [ "master", "python" ]
+    branches: ["master", "python"]
 
 permissions:
   contents: read
@@ -35,4 +35,3 @@ jobs:
       - name: Test with pytest
         run: |
           pytest Python
-

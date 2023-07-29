@@ -40,21 +40,21 @@ native functions, and
 forth words (compiled as i16 addresses).
 
 ## TODO
- - Graceful error handling (over- and underflow, type violations, divide by zero) must not halt the runtime
- - LOOP, DO are not implemented
- - Support more ANS words
- - Do more of the Forth-way
- - Bring Python up to the TypeScript level
- - Unit tests in Forth itself
- - Optimize dictionary
- - Separate memory areas (core vs user defined words)
- - Consider leaky LIFO definition bucket.
- - Scan unreachable addresses, primitive garbage collection.
- - INLINE vs REFERENCE compilation (easy)
- - Data type/size by memory address prefix.
 
+- Graceful error handling (over- and underflow, type violations, divide by zero) must not halt the runtime
+- LOOP, DO are not implemented
+- Support more ANS words
+- Do more of the Forth-way
+- Bring Python up to the TypeScript level
+- Unit tests in Forth itself
+- Optimize dictionary
+- Separate memory areas (core vs user defined words)
+- Consider leaky LIFO definition bucket.
+- Scan unreachable addresses, primitive garbage collection.
+- INLINE vs REFERENCE compilation (easy)
+- Data type/size by memory address prefix.
 
-## Intensions 
+## Intensions
 
 Harder to write my forth, but probably will be very easy to write a third forth.
 
@@ -69,7 +69,6 @@ which will then likely back-influence all other implementations.
 
     yarn test
     yarn tsc
-
 
 ## Helpful React (root) commands
 
@@ -118,4 +117,3 @@ no warranty express or implied,
    'tis unmerchantable shit.
 Liability for damages denied.
 ```
-
