@@ -5,19 +5,19 @@ import { BasicArgOne } from "./core/BasicArgOne";
 import { BasicArgTwo } from "./core/BasicArgTwo";
 
 export default class Interpreter {
-    machine: Machine;
+  machine: Machine;
 
-    constructor() {
-        this.machine = new Machine();
-        expect(this.machine.load(
-            [INTERPRET, COMPILE, BasicArgOne, BasicArgTwo]
-        )).toBe(true);
-    }
+  constructor() {
+    this.machine = new Machine();
+    expect(
+      this.machine.load([INTERPRET, COMPILE, BasicArgOne, BasicArgTwo]),
+    ).toBe(true);
+  }
 
-    execute(string_input: string): void {
-        if (!string_input || !string_input.trim()) {
-            return;
-        }
-        this.machine.executeInputBuffer(string_input);
+  execute(string_input: string): void {
+    if (!string_input || !string_input.trim()) {
+      return;
     }
+    this.machine.executeInputBuffer(string_input);
+  }
 }

@@ -1,0 +1,7 @@
+{
+  "bail": 1,
+  "displayName": "North TS",
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "verbose": false
+}

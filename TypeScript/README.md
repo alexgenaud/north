@@ -45,4 +45,3 @@ The machine is implemented in TypeScript. The view is implemented in Typescript,
   - Use alternative words otherwise
   - For example, CONST seems to work exactly like ANS CONSTANT
   - ANS VARIABLE does not set value, so VAR or LET might be a new word
-
