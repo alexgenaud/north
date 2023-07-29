@@ -111,7 +111,11 @@ class Singleton {
       contData.size = adr_end - last_adr_in_row;
       contData.length = 0;
       contData.type = data.type;
-      contData.value = "continued";
+      if (typeof data.value === "number" || typeof data.value === "string") {
+        contData.value = data.value;
+      } else {
+        contData.value = "continued";
+      }
       newMemory.splice(++d, 0, contData); // insert after current element
       len++;
       data.size = data.size - contData.size;
