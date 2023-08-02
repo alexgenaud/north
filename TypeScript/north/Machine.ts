@@ -42,17 +42,10 @@ export default class Machine {
   }
 
   quitLoop() {
-    //if (!this.inputBuffer.isEmpty()) {
-    //    console.log("quitLoop input: " + this.inputBuffer.toString());
-    //}
-
     const parsePtr = this.dictionary.getWordAddress("PARSE") as number;
     while (!this.inputBuffer.isEmpty()) {
       const adrOfParser = this.read(parsePtr).getValue() as number;
       const parser = this.read(adrOfParser).getValue() as Func;
-      //    console.log("quitLoop parser: "
-      //        + adrOfParser +" input token: "
-      //        + this.inputBuffer.peek())
       parser(this);
     }
   }

@@ -27,6 +27,9 @@ describe("CoreCondition", () => {
 
   test("if_simple", () => {
     assertExecutePop("1 IF 2 ELSE 3 THEN", 2);
+  });
+
+  test("if_simple_extra", () => {
     assertExecuteStack("1 IF ELSE 3 THEN", "");
     assertExecutePop("1 IF 2 THEN", 2);
     assertExecutePop("-1 IF 2 ELSE 3 THEN", 2);

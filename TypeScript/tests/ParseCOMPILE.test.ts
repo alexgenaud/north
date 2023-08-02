@@ -56,6 +56,10 @@ describe("parse/COMPILE", () => {
     assertExecutePop("3 : NEG 0 SWAP - ; NEG", -3);
   });
 
+  test("define_word_neg_define_and_run_7_neg", () => {
+    assertExecutePop(": NEG 0 SWAP - ; 7 NEG", -7);
+  });
+
   test("overwrite_same_colon_word_inner_old", () => {
     assertExecuteStack(": X 7 +     ; 1 X", "8");
     assertExecuteStack(": X X 100 + ; 0 X", "8 107");

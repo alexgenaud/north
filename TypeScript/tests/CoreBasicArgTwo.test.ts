@@ -124,6 +124,12 @@ describe("core/BasicArgTwo", () => {
     assertExecutePop("3 5 *", 15);
   });
 
+  test("math_seprate_input", () => {
+    assertExecuteStack("2 3 +", "5");
+    assertExecuteStack("7", "5 7");
+    assertExecutePop("*", 35);
+  });
+
   test("divide_int", () => {
     assertExecutePop("6 7 /", 0);
     assertExecutePop("6 6 /", 1);
