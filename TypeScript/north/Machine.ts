@@ -15,7 +15,7 @@ export default class Machine {
   compile_definition: (number | string)[] | null;
 
   constructor() {
-    this.memory = new Memory(128);
+    this.memory = new Memory(128); // initial memory size in bytes
     this.dictionary = new Dictionary(this);
     this.opstack = new Stack();
     this.costack = new Stack();

@@ -52,7 +52,6 @@ export default class Stack {
 
   public peek(index = -1): any {
     if (this.stack.length < 1) {
-      console.log("Stack peek empty");
       return undefined;
     }
     if (index < 0) {

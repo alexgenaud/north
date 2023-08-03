@@ -54,11 +54,26 @@ export default class Dictionary {
   }
 
   public addColonArray(word: string, addressArray: number[]): number {
-    const dataHeader: Data = new Data(addressArray, DataType.c_n, word);
+    const dataHeader: Data = new Data(
+      0,
+      DataType.c_n,
+      word,
+      0,
+      addressArray.length,
+    );
     const addressHeader = this.addWordData(word, dataHeader);
-    let addressLocation = addressHeader + 1;
+
+    let addressLocation = addressHeader + 2;
+    // TODO should be all in one call, set the value as the next address!
+    // and therefor colon word headers should be two bytes !!!
+    // TODO or the dictionary entry needs flags but not the data it is pointing to.
+    dataHeader.setValue(addressLocation);
+
     for (const i16address of addressArray) {
-      this.machine.write(new Data(i16address, DataType.i16), addressLocation);
+      const retAdr = this.machine.write(
+        new Data(i16address, DataType.i16),
+        addressLocation,
+      );
       addressLocation += 2;
     }
     return addressHeader;

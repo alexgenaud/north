@@ -62,7 +62,7 @@ describe("parse/COMPILE", () => {
 
   test("overwrite_same_colon_word_inner_old", () => {
     assertExecuteStack(": X 7 +     ; 1 X", "8");
-    assertExecuteStack(": X X 100 + ; 0 X", "8 107");
+    assertExecuteStack(": X X 80 20 + + ; 0 X", "8 107");
     assertExecuteStack(": X X  10 + ; 0 X", "8 107 117");
     assertExecuteStack(": X DROP    ; X", "8 107");
   });

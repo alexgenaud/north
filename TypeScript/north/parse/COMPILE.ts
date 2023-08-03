@@ -44,14 +44,23 @@ export const COMPILE: Loadable = (ma: Machine): boolean => {
         addressList.push(address);
       } else if (data.isStr() && typeof value === "string") {
         addressList.push(address);
-      } else if (data.isColonFunc() && Array.isArray(value)) {
-        addressList.push(...value); // INLINE
+      } else if (
+        data.isColonFunc() &&
+        typeof value === "number" &&
+        data.getLength() > 1
+      ) {
+        // TODO presumably if one then it's only value if 0 = return
+        // TODO could recurse
+        //addressList.push(...value); // INLINE
+        addressList.push(address);
       } else {
         throw new Error(
           `Unexpected data: ${data} at address: ${address} of word: ${token}`,
         );
       }
     }
+    addressList.push(0);
+
     m.dictionary.addColonArray(wordName as string, addressList); // returns address, ignored
     m.compile_definition = null;
 

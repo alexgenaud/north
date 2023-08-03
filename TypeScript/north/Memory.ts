@@ -1,5 +1,5 @@
 import { isInt, assertData, assertIntRangeInclusive } from "../north/Util";
-import { DataBlock, createUninitDataBlock } from "../north/types";
+import { DataBlock, DataType, createUninitDataBlock } from "../north/types";
 import Data from "../north/Data";
 
 export default class Memory {
@@ -22,7 +22,7 @@ export default class Memory {
     const oldData: Data = this.memory[address];
     assertData("Memory.overwrite", oldData);
     if (oldData.getValue() === newValue) {
-      console.log("Overwritting old var with same value: " + newValue);
+      console.warn("Overwritting old var with same value: " + newValue);
     }
     oldData.setValue(newValue);
     return address; // same old address
@@ -37,7 +37,7 @@ export default class Memory {
         (data.isStr() && typeof value === "string") ||
         (data.isFloat() && typeof value === "number") ||
         (data.isCoreFunc() && typeof value === "function") ||
-        (data.isColonFunc() && Array.isArray(value))
+        (data.isColonFunc() && typeof value === "number")
       )
     ) {
       throw new Error(

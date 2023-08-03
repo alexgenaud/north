@@ -13,9 +13,12 @@ import { Loadable, Func } from "../types";
 export const INTERPRET: Loadable = (ma: Machine): boolean => {
   const CONDITIONAL_IGNORE_MODES = [Mode.IGNORE, Mode.BLOCK];
 
-  const exec_colon_word = function (m: Machine, address_list: number[]): void {
-    for (const address of address_list) {
+  const exec_colon_word = function (m: Machine, first_address: number): void {
+    let pc = first_address; // program counter
+    for (; pc < 200; pc += 2) {
+      const address: number = m.read(pc).getValue() as number;
       assertInt("EXEC", address);
+      if (address === 0) return;
       const data: Data = m.read(address);
       assertData("EXEC", data);
       const mode: Mode = m.costack.peek();
@@ -23,21 +26,17 @@ export const INTERPRET: Loadable = (ma: Machine): boolean => {
         // TODO COMPILED EXECUTED words should jump
         continue;
       }
-      const value = data.getValue();
-      assertNonNull("EXEC", value);
-      exec_value(m, data, value);
+      exec_value(m, data);
     }
   };
 
-  const exec_value = function (
-    m: Machine,
-    data: Data,
-    value: Func | number | number[] | string,
-  ) {
+  const exec_value = function (m: Machine, data: Data) {
+    const value = data.getValue();
+    assertNonNull("EXEC value", value);
     if (data.isCoreFunc() && typeof value === "function") {
       value(m);
-    } else if (data.isColonFunc() && Array.isArray(value)) {
-      exec_colon_word(m, value);
+    } else if (data.isColonFunc() && data.getLength() > 0) {
+      exec_colon_word(m, value as number);
     } else if (data.isInt() && isInt(value)) {
       m.opstack.push(value as number);
     } else if (data.isFloat() && typeof value === "number") {
@@ -68,9 +67,7 @@ export const INTERPRET: Loadable = (ma: Machine): boolean => {
       m.opstack.push(parseInt(token, 10));
       return;
     }
-    const value = data.getValue();
-    assertNonNull("P_INTERPRET", value);
-    exec_value(m, data, value);
+    exec_value(m, data);
   };
 
   const d = ma.dictionary;
