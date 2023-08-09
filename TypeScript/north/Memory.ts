@@ -1,6 +1,7 @@
 import { isInt, assertData, assertIntRangeInclusive } from "../north/Util";
 import { DataBlock, DataType, createUninitDataBlock } from "../north/types";
 import Data from "../north/Data";
+import Machine from "../north/Machine";
 
 export default class Memory {
   private size: number;
@@ -8,7 +9,7 @@ export default class Memory {
   private highestAddress: number;
 
   constructor(size?: number) {
-    this.size = size === undefined ? 128 : size;
+    this.size = size === undefined ? Machine.UPPER_BOUND : size;
     this.memory = new Array(this.size);
     this.highestAddress = -1;
   }

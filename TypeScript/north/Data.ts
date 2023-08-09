@@ -171,7 +171,8 @@ export default class Data {
           " with " +
           value,
       );
-      // TODO will need to check length and/or replace the subsequent array values in memory
+      // TODO setValue(string) will need to check string length
+      // and/or replace the subsequent array values in memory
       this.length = (value as string).length;
     } else if (
       this.isCoreFunc() ||
@@ -183,7 +184,7 @@ export default class Data {
           this.address,
       );
     } else if (this.isColonFunc() && typeof value === "number") {
-      // TODO this is called to update th 'next' address
+      // TODO this is called to update the 'next' address
       // Find a cleaner way
     } else if (typeof this.value === "number" && this.isNumber()) {
       if (

@@ -49,9 +49,7 @@ export const COMPILE: Loadable = (ma: Machine): boolean => {
         typeof value === "number" &&
         data.getLength() > 1
       ) {
-        // TODO presumably if one then it's only value if 0 = return
-        // TODO could recurse
-        //addressList.push(...value); // INLINE
+        // TODO addressList.push(...value); // INLINE
         addressList.push(address);
       } else {
         throw new Error(
@@ -73,24 +71,11 @@ export const COMPILE: Loadable = (ma: Machine): boolean => {
   const parseCOMPILE: Func = function (m: Machine): void {
     assertFuncIn(m, "P_:", 1);
     const token = m.inputBuffer.shift() as string;
-
-    // must be the first word after :
-    // -- : NAME ... ... ...
-    // TODO -- : ; --- what should happen? nothing at all
-    // TODO other weird cases like -- : CONST --
-
-    // TODO handle immediate words
-    // like ( ... ) ." ... " maybe CONST and VAR
     const data: Data | null = m.dictionary.getAction(token);
-    //if (data == null) {
-    //    if (isInt(token))
-    //}
-
     if (token === ";" && data != null && data.isImmediateFunc()) {
       endCOMPILE(m);
       return;
     }
-
     // TODO should really handle immediate words and definitions
     if (m.compile_definition == null) {
       throw new Error(

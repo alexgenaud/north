@@ -29,6 +29,20 @@ describe("CoreCondition", () => {
     assertExecutePop("1 IF 2 ELSE 3 THEN", 2);
   });
 
+  test("empty_condition_blocks", () => {
+    assertExecuteStack(": EMPTY IF ELSE THEN ; 1 EMPTY", "");
+    assertExecutePop("5 6 0 EMPTY +", 11);
+    assertExecuteStack("17 EMPTY", "");
+  });
+
+  test("nested_empty_conditions", () => {
+    assertExecuteStack(": MTEE IF IF ELSE THEN ELSE IF ELSE THEN THEN ;", "");
+    assertExecutePop("7 0 0 MTEE", 7);
+    assertExecutePop("7 0 1 MTEE", 7);
+    assertExecutePop("7 1 0 MTEE", 7);
+    assertExecutePop("7 1 1 MTEE", 7);
+  });
+
   test("if_simple_extra", () => {
     assertExecuteStack("1 IF ELSE 3 THEN", "");
     assertExecutePop("1 IF 2 THEN", 2);
@@ -105,4 +119,35 @@ describe("CoreCondition", () => {
     assertExecutePop("-1 IS_TEN", 4);
     assertExecutePop("10 IS_TEN", 3);
   });
+
+  test("nest_condition_once", () => {
+    assertExecuteStack(": DIGITS 10 < IF 1 ELSE 2 THEN ; ", "");
+    assertExecutePop("3 DIGITS", 1);
+    assertExecutePop("314 DIGITS", 2);
+  });
+
+  test("nest_condition_twice", () => {
+    assertExecutePop("9 DUP 10 < IF 1 ELSE DUP 100 < IF 2 ELSE 3 THEN THEN SWAP DROP", 1);
+    assertExecutePop("89 DUP 10 < IF 1 ELSE DUP 100 < IF 2 ELSE 3 THEN THEN SWAP DROP", 2);
+    assertExecutePop("789 DUP 10 < IF 1 ELSE DUP 100 < IF 2 ELSE 3 THEN THEN SWAP DROP", 3);
+
+    assertExecuteStack(": DIGITS DUP 10 < IF 1 ELSE DUP 100 < IF 2 ELSE 3 THEN THEN SWAP DROP ; ", "");
+    assertExecutePop("5 DIGITS", 1);
+    assertExecutePop("54 DIGITS", 2);
+    assertExecutePop("543 DIGITS", 3);
+  });
+
+  test("nest_many_if_lines", () => {
+    assertExecuteStack(": DIGITS DUP 10 < IF 1 ELSE DUP 100 < IF 2 ELSE", "");
+    assertExecuteStack("         DUP 1000 < IF 3 ELSE DUP 10000 < IF 4 ELSE", "");
+    assertExecuteStack("         DUP 100000 < IF 5 ELSE 6", "");
+    assertExecuteStack("THEN THEN THEN THEN THEN SWAP DROP ;", "");
+    assertExecutePop("5 DIGITS", 1);
+    assertExecutePop("54 DIGITS", 2);
+    assertExecutePop("543 DIGITS", 3);
+    assertExecutePop("5432 DIGITS", 4);
+    assertExecutePop("54321 DIGITS", 5);
+    assertExecutePop("543210 DIGITS", 6);
+  });
+
 });

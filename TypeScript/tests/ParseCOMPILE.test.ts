@@ -67,6 +67,24 @@ describe("parse/COMPILE", () => {
     assertExecuteStack(": X DROP    ; X", "8 107");
   });
 
+  test("redefine_dup_to_square", () => {
+    assertExecuteStack("5 DUP", "5 5");
+    assertExecuteStack(": OLD_DUP DUP ; 4 OLD_DUP", "5 5 4 4");
+    assertExecuteStack(": DUP DUP * ; 13 DUP", "5 5 4 4 169");
+    assertExecuteStack("1 OLD_DUP", "5 5 4 4 169 1 1");
+  });
+
+  test("new_word_of_primitive", () => {
+    assertExecuteStack("5 DUP", "5 5");
+    assertExecuteStack(": SQUARE DUP * ; SQUARE", "5 25");
+  });
+
+  test("nest_colon_words", () => {
+    assertExecutePop(": PLUSONE 1 + ; 1 PLUSONE", 2);
+    assertExecutePop(": PLUSTWO PLUSONE PLUSONE ; 1 PLUSTWO", 3);
+    assertExecutePop(": PLUSTHREE PLUSTWO PLUSONE ; 4 PLUSTHREE", 7);
+  });
+
   /*
     test('program_is_prime', () => {
         assertExecuteStack("""
@@ -80,15 +98,4 @@ describe("parse/COMPILE", () => {
     });
     */
 
-  test("redefine_dup_to_square", () => {
-    assertExecuteStack("5 DUP", "5 5");
-    assertExecuteStack(": OLD_DUP DUP ; 4 OLD_DUP", "5 5 4 4");
-    assertExecuteStack(": DUP DUP * ; 13 DUP", "5 5 4 4 169");
-    assertExecuteStack("1 OLD_DUP", "5 5 4 4 169 1 1");
-  });
-
-  test("new_word_of_primitive", () => {
-    assertExecuteStack("5 DUP", "5 5");
-    assertExecuteStack(": SQUARE DUP * ; SQUARE", "5 25");
-  });
 });

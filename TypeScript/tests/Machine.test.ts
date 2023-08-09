@@ -39,15 +39,11 @@ describe("Machine", () => {
     assertExecuteStack("   ", "");
   });
 
-  /*
-     * TODO need to separate parsers (compile) from interpret
-    test.only('execute_bogus', () => {
-        assertExecuteStack("BoGuS", "");
-        expect(() => {
-            machine.executeInputBuffer("BoGuS");
-        }).toThrow("non-null")
-     });
-    */
+  test('execute_bogus', () => {
+    expect(() => {
+      machine.executeInputBuffer("BoGuS");
+    }).toThrow("BoGuS")
+  });
 
   test("machine_execute_push", () => {
     assertExecutePop("1", 1);

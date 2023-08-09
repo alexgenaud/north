@@ -11,14 +11,17 @@ export default class Machine {
   private memory: Memory;
   opstack: Stack;
   costack: Stack;
+  program_counter: number;
   inputBuffer: Buffer;
   compile_definition: (number | string)[] | null;
+  public static readonly UPPER_BOUND: number = 256;
 
   constructor() {
-    this.memory = new Memory(128); // initial memory size in bytes
+    this.memory = new Memory();
     this.dictionary = new Dictionary(this);
     this.opstack = new Stack();
     this.costack = new Stack();
+    this.program_counter = 0;
     this.inputBuffer = new Buffer();
     this.costack.push(Mode.EXECUTE);
     this.compile_definition = null;
