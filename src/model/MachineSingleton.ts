@@ -4,6 +4,7 @@ import { COMPILE } from "../../TypeScript/north/parse/COMPILE";
 import { CONST } from "../../TypeScript/north/parse/CONST";
 import { VAR } from "../../TypeScript/north/parse/VAR";
 import { Condition } from "../../TypeScript/north/core/Condition";
+import { Jump } from "../../TypeScript/north/core/Jump";
 import { BasicArgOne } from "../../TypeScript/north/core/BasicArgOne";
 import { BasicArgTwo } from "../../TypeScript/north/core/BasicArgTwo";
 
@@ -41,6 +42,7 @@ class Singleton {
       CONST,
       VAR,
       Condition,
+      Jump,
       BasicArgOne,
       BasicArgTwo,
     ]);

@@ -19,8 +19,9 @@ export const COMPILE: Loadable = (ma: Machine): boolean => {
       );
     }
     const wordName = m.compile_definition.shift();
-    const addressList: number[] = [];
-    for (const token of m.compile_definition) {
+    m.compile_def_adrs = [] as number[];
+    for (let index = 0; index < m.compile_definition.length; index++) {
+      const token = m.compile_definition[index];
       if (!(typeof token === "string" && token.length > 0)) {
         throw new Error(
           "Compiled colon word must contain non-empty numbers or words",
@@ -29,7 +30,7 @@ export const COMPILE: Loadable = (ma: Machine): boolean => {
       const address = m.dictionary.getWordAddress(token) as number;
       if (address === null && isInt(token)) {
         const newAddress = m.dictionary.addI8(token, parseInt(token, 10));
-        addressList.push(newAddress);
+        m.compile_def_adrs.push(newAddress);
         continue;
       }
       assertInt("EXEC : compile end", address);
@@ -38,30 +39,43 @@ export const COMPILE: Loadable = (ma: Machine): boolean => {
       assertData("EXEC : compile end", data);
 
       const value = data.getValue();
-      if (data.isCoreFunc() && typeof value === "function") {
-        addressList.push(address);
-      } else if (data.isInt() && typeof value === "number") {
-        addressList.push(address);
-      } else if (data.isStr() && typeof value === "string") {
-        addressList.push(address);
+      if (data.isConditionFunc()) {
+        const coreFunc = m.dictionary
+          .getAction(":" + token)
+          ?.getValue() as Func;
+        coreFunc(m);
+      } else if (data.isCoreFunc() && typeof value === "function") {
+        m.compile_def_adrs.push(address);
       } else if (
         data.isColonFunc() &&
         typeof value === "number" &&
         data.getLength() > 1
       ) {
-        // TODO addressList.push(...value); // INLINE
-        addressList.push(address);
+        // TODO m.compile_def_adrs.push(...value); // INLINE
+        m.compile_def_adrs.push(address);
+      } else if (data.isInt() && typeof value === "number") {
+        m.compile_def_adrs.push(address);
+      } else if (data.isStr() && typeof value === "string") {
+        m.compile_def_adrs.push(address);
       } else {
         throw new Error(
           `Unexpected data: ${data} at address: ${address} of word: ${token}`,
         );
       }
+    } // for each token in m.compile_definition
+
+    while (!m.relAdrStack.is_empty()) {
+      const rel_adr = m.relAdrStack.pop() as number;
+      const rel_val = m.compile_def_adrs[rel_adr];
+      let address = m.dictionary.getWordAddress(rel_val + "");
+      if (address == null) {
+        address = m.dictionary.addI8(rel_val + "", rel_val);
+      }
+      m.compile_def_adrs[rel_adr] = address;
     }
-    addressList.push(0);
-
-    m.dictionary.addColonArray(wordName as string, addressList); // returns address, ignored
+    m.compile_def_adrs.push(0);
+    m.dictionary.addColonArray(wordName as string, m.compile_def_adrs); // returns address, ignored
     m.compile_definition = null;
-
     m.overwrite(
       d.getWordAddress("P_INTERPRET") as number,
       d.getWordAddress("PARSE") as number,

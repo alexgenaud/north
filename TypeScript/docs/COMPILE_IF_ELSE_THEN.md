@@ -6,6 +6,13 @@ In this article, we will discuss the reading and interpretation of each word,
 what happens during execution of each word, how memory will be modified, word by word,
 and the final compilation and linking.
 
+This document is an example of what might be
+called 'documentation driven development'.
+In other words, this spec was written before coding, then edited.
+At the time of last edit (Aug 2023),
+the conditional jump logic should be proven correct.
+However, the `input buffer` has not yet been implemented as described in this document.
+
 ## A word about words
 
 We will use the following input command as an example.
@@ -69,8 +76,8 @@ There may be hints of `zzz` in some examples below.
 These characters mean nothing of consequence.
 Or rather `zzz` represents unknown undefined garbage that may be in memory.
 `zzz` may be temporary data left over from earlier processes, unallocated,
-never initialized, anything unpredictable, or no longer unreferenced.
-We can assume there is a huge qualtity of `zzz` not worth further discussion.
+never initialised, anything unpredictable, or no longer unreferenced.
+We can assume there is a huge quantity of `zzz` not worth further discussion.
 
 ```
     ---                                        ---
@@ -81,6 +88,9 @@ We can assume there is a huge qualtity of `zzz` not worth further discussion.
 ```
 
 ## Points of input
+
+The `input buffer` as described in this section
+has not yet been implemented in memory as of August 2023.
 
 The contents of the input buffer could come from any source.
 For simplicity, we will assume the input originates from
@@ -111,7 +121,7 @@ ending again with double spaces.
 The real size of the input buffer is quite large.
 However, we illustrate `IP` (input pointer)
 above with a fictional buffer of 16 bytes.
-It's too clausterphobic for the classic program, but the plain text will fit.
+It's too claustrophobic for the classic program, but the plain text will fit.
 Notice `IP` points to byte 8 with the "H" of "Hello".
 "World" is truncated at "o" at byte 15 and continues with "rld! " from byte 0.
 `z` is unknown, presumably left over from an earlier command,
@@ -128,7 +138,7 @@ Let our user input the following
 
 User input is appended to the circular input buffer at the
 memory location pointed to by `IP` (input pointer).
-`IP` will advance as each space-deliminated word is parsed
+`IP` will advance as each space-delimited word is parsed
 until `IP` points to double space.
 
 ```
@@ -185,7 +195,7 @@ The above illustrates some variables in memory immediately after `:` returns.
 `:` ensured that the `:NAME` string is empty
 and the stacks `:S` and `:RELADR` are empty.
 `CS` happens to be empty in this example, but that need not have been the case.
-We do not care what may have been burried at the bottom of the `CS` stack.
+We do not care what may have been buried at the bottom of the `CS` stack.
 We will only be concerned with what will be
 pushed into and popped from `CS` until complication completes.
 
@@ -249,7 +259,7 @@ Perhaps this makes some sense from the 'Reverse Polish Notation' perspective.
 If not, then let's say "that's just the way it is".
 
 Another thing to note is the conditionals will be handled differently
-depending on whether we're compiling user input or just interpretting
+depending on whether we're compiling user input or just interpreting
 user input or executing compiled conditionals.
 The `INTERPRET` parser will need to read every word whether in the
 `IF` or `ELSE` block as it cannot yet predict
@@ -261,14 +271,14 @@ test conditions and jump ahead skipping either the IF or ELSE block.
 During the compile phase (which we are discussing),
 we need to keep track of addresses we jump from and addresses we jump to.
 We cannot know all of these addresses until we read them and cannot
-finalize any of them before setting the word in the
+finalise any of them before setting the word in the
 dictionary and the compiled definition into executable memory.
 
 ```
   IF                FOO               ELSE     BAR THEN BAZ      RETURN
 
   02       04       06       08       10       12       14          (relative definition addresses)
-  [2 ,                       8]                                     (rel. adr. pushed to CS)
+  [1 ,                       4]                                     (rel. adr. pushed to CS)
   ??       & J=0    & FOO    ??       & JMP    & BAR    & BAZ    0  (pointers, word addresses)
 ```
 
@@ -278,27 +288,29 @@ The top line represents the user input words [ IF FOO ELSE ... ]
 with generous white space in between.
 
 The next line [02, 04, 06, 08, ...] are the relative addresses of each compiled word.
-We already compiled `VOG` at address 112 in two bytes at relative address 00.
+We already compiled `VOG` at address 112 in two bytes at relative address 0.
 We will discuss each additional compiled word in detailed sections below.
 Let it be sufficient to say now that each compiled word is a two byte address,
 and the entire compiled definition will require more than a dozen bytes.
 
-We say 'relative' because we will pressume our compiled definition begins at address 00.
-Obviously every compiled definition cannot begin at memory address 0.
+We say 'relative' because we will presume our compiled definition begins at address 0.
+Obviously every compiled definition cannot begin at absolute memory address 0.
 When we complete compilation (at word `;`),
 we will look up the latest value of `MEMP`
 and append the entire compiled definition from memory address `MEMP`.
 Any specific absolute memory address is the sum of a relative addresses plus `MEMP`.
 
-The line under the relative addresses of future compiled words are two entries [ 2 , 8 ]
+The line under the relative addresses of future compiled words are two entries [ 1 , 4 ]
 that will be pushed to the control stack.
 These relative addresses in the control stack
 refer to the null departure locations to be later replaced
 with relative destination addresses.
 During final compilation and linking at `;`
-we'll add these relative address jumps to `MEMP` to obtain the absoluate jump destination.
+we'll add these relative address jumps to `MEMP`
+to obtain the absolute jump destination.
 
-On the same line are addresses of words such as `& FOO` (the absolute address of `FOO`).
+On the same line are addresses of words such as `& FOO`
+(the absolute address of `FOO`).
 We've already compiled `& YOG`.
 The `??` are the jump destination addresses that we do not know yet.
 Finally, we will end with 0 or a return address.
@@ -311,7 +323,7 @@ jumping from some `??` to some future compiled address.
   IF                FOO               ELSE     BAR THEN BAZ      RETURN
 
   02       04       06       08       10       12       14          (relative definition addresses)
-  [2 ,                       8]                                     (rel. adr. pushed to CS)
+  [1 ,                       4]                                     (rel. adr. pushed to CS)
   ??       & J=0    & FOO    ??       & JMP    & BAR    & BAZ    0  (pointers, word addresses)
   +-                         +-                ^        ^
   |                          |                 |        |
@@ -340,25 +352,25 @@ So, in the case that we pop 0,
 then we want to skip the if-true-block entirely
 and jump to the beginning of the else-false-block.
 Otherwise, in all other cases (not 0),
-we ignore the jump and preceed to the next address as normal.
+we ignore the jump and precede to the next address as normal.
 However, when we get to the end of the if-true-block,
 immediately before the else-false-block, then
 we want to jump to the end of the else,
 to the end of the entire conditional block.
 
-In psuedo BASIC code:
+In pseudo BASIC code:
 
 ```
 00 (do YOG)
-02 (if pop == 0 then jump to 12)
+02 (if pop == 0 then jump ahead 10 to 12)
 06 (do FOO)
-08 (jump to 14)
+08 (jump ahead 6 to 14)
 12 (do BAR)
 14 (do BAZ)
 16 (return)
 ```
 
-When we parse `IF` we push its relative address to the control stack `CS = [2]`.
+When we parse `IF` we push its relative address to the control stack `CS = [1]`.
 Later, when we parse `ELSE` we predict the destination
 six bytes into the future (12), then pop `CS` to find the departure location is `:S`.
 We can now set the relative destination jump address at address 02
@@ -370,17 +382,17 @@ and 10 before injecting the entire definition into executable memory.
 ```
   IF              FOO             ELSE    BAR
   02      04      06      08      10      (12)
- (12)     & J=0   & FOO  (??)     & JMP   & BAR
+ (10)     & J=0   & FOO  (??)     & JMP   & BAR
   ^                                       --+--
   |                                         |
   +-----------------------------------------+
 
                   FOO             ELSE    BAR   THEN   BAZ
                   06      08      10      12           (14)
-                  & FOO  (14)     & JMP   & BAR        & BAZ
-                          ^                            --+--
-                          |                              |
-                          +------------------------------+
+                  & FOO   (6)     & JMP   & BAR        & BAZ
+                           ^                           --+--
+                           |                             |
+                           +-----------------------------+
 ```
 
 Why 'six bytes into the future'?
@@ -412,7 +424,7 @@ The parser looks `IF` up in the dictionary.
 The definition will have an 'immediate conditional' flag that
 requires execution of a specific compilation function: `:IF`.
 
-Rather than direclty compile the address of `IF` into our new definition,
+Rather than directly compile the address of `IF` into our new definition,
 `:IF` will instead prepare for a conditional address jump.
 We want to compile new two words (four bytes):
 a destination address followed by the `J=0` command
@@ -430,8 +442,8 @@ when the fully compiled and linked definition is added to executable memory.
                        IP = 33
 
 :S      :: [112, 0, 86]   (definition stack of compiled word addresses)
-CS      :: [     2    ]   (control stack refers to two byte index of null address)
-:RELADR :: [     2    ]   (relative address stack flags 2 as relative)
+CS      :: [     1    ]   (control stack refers to two byte index of null address)
+:RELADR :: [     1    ]   (relative address stack flags index 1 as relative)
 ```
 
 For now, we push address 00 (aka null) as place-holder onto `:S`.
@@ -439,7 +451,7 @@ Then we lookup the absolute address of `J=0`.
 Suppose the address is 86.
 We push 86 onto `:S`.
 
-We push the relative address 02 (the second two byte address)
+We push the relative address 1 (index 1, second and third 16 bit address)
 onto the control stack `CS` and onto the relative address stack `:RELADR`.
 
 While these have the same value for the same reason, the `CS` will grow and shrink
@@ -460,8 +472,8 @@ We push 102 on to the compilation stack `:S`.
                            IP = 37
 
 :S      :: [112, 0, 86, 102]   (definition stack of compiled word addresses)
-:RELADR :: [     2         ]   (relative address stack flags 2 as relative)
-CS      :: [     2         ]   (control stack refers to two byte index of null address)
+:RELADR :: [     1         ]   (relative address stack flags 1 as relative)
+CS      :: [     1         ]   (control stack refers to index of null address)
 ```
 
 ## Parse `ELSE`
@@ -470,11 +482,15 @@ The parser shifts `ELSE` from the input buffer.
 When we look `ELSE` up in the dictionary we'll find that it, like `IF`,
 is a conditional word with a special compilation parser, called `:ELSE`.
 
-`:ELSE` will inject a destination address followed by a mandatory jump command (four bytes).
+`:ELSE` will inject a destination address
+followed by a mandatory jump command (four bytes).
 But it's easier to resolve the previous if-false-relative-jump first.
-Relative address 12 is after the four bytes that will be inserted.
-We pop 2 from `CS` to find the jump departure location,
-and replace the null place-holder (0 at 02) with relative address 12.
+The relative indices (5) to jump ahead is calculated from
+the relative destination index 6
+(address 12 after the four bytes that will be inserted)
+minus the jump departure from index 1 (relative address 2) popped from `CS`.
+Twice the index difference (5) is the relative bytes (10) to jump ahead in the 16 bit addresses.
+We replace the null place-holder (0 at index 1) with relative 10 byte jump.
 
 As earlier, we inject a null (0) destination address and a jump to `:S`.
 Unlike `:IF` however, the jump `JMP` is mandatory, not conditional.
@@ -487,9 +503,9 @@ Suppose the dictionary returns absolute address 126 for `JMP`.
 We push 0 and 126 into `:S`, then 8 into both `:RELADR` and `CS`.
 
 ```
-:S      :: [112, 12, 86, 102, 0, 126]   (definition stack of compiled addresses)
-:RELADR :: [      2           8     ]   (relative addresses at 2 and 8)
-CS      :: [                  8     ]   (control stack with only 8 to update)
+:S      :: [112, 10, 86, 102, 0, 126]   (definition stack of compiled addresses)
+:RELADR :: [      1           4     ]   (relative addresses at 2 and 8)
+CS      :: [                  4     ]   (control stack with only 8 to update)
 ```
 
 ## Compile third executable word or number in the false-else-block
@@ -498,8 +514,10 @@ The parser shifts `BAR` from the input buffer.
 Suppose the address of `BAR` is 90.
 We push 90 on to the compilation stack `:S`.
 
-This `BAR` at address 90 is the first word of the else-block that the false-condition will jump to.
-It's the sixth two byte relative address, hense `12 &JMP=0` [12 86] conditionally jumps here.
+This `BAR` at address 90 is the first word of
+the else-block that the false-condition will jump to.
+It's the sixth two byte relative address from the first
+(after 0), hence `10 &JMP=0` [10 86] conditionally jumps here.
 
 ```
     14    20    26  30 33  37   42  46   51  55 58   (mem addresses)
@@ -507,9 +525,9 @@ It's the sixth two byte relative address, hense `12 &JMP=0` [12 86] conditionall
                                     ^               ^
                                     IP = 46       (end of input)
 
-:S      :: [112, 12, 86, 102, 0, 126, 90 ]   (definition stack of compiled adr.s)
-:RELADR :: [      2           8          ]   (relative addresses at 2 and 8)
-CS      :: [                  8          ]   (control stack with only 8 to update)
+:S      :: [112, 10, 86, 102, 0, 126, 90 ]   (definition stack of compiled adr.s)
+:RELADR :: [      1           4          ]   (relative addresses at indices 1 and 4)
+CS      :: [                  4          ]   (control stack with only 4 to update)
 ```
 
 ## Let `THEN` be done!
@@ -519,14 +537,13 @@ Like `IF` and `ELSE`, we need to parse with a special compilation version called
 because its compilation behaviour will differ from its input interpretation and compiled execution.
 
 We can now resolve the mandatory jump from the end of the if-true-block.
-Whatever will come after `THEN`, its relative address will be 14.
-We pop 8 from the control stack `CS`,
-and replace the null (0) at 8 (index 4 times 2 bytes) in `:S`
-with relative destination address 14.
+Whatever will come after `THEN`, its index will be 7 (relative address will be 14).
+We pop index 4 from the control stack `CS`,
+and replace the null (0) with 6 (twice 7-4) at index 4 in `:S`.
 
 ```
-:S      :: [112, 12, 86, 102, 14, 126, 90 ]   (definition stack of compiled adr.s)
-:RELADR :: [      2            8          ]   (relative addresses at 2 and 8)
+:S      :: [112, 10, 86, 102,  6, 126, 90 ]   (definition stack of compiled adr.s)
+:RELADR :: [      1            4          ]   (relative addresses at indices 1 and 4)
 CS      :: []                                 (control stack, empty)
 ```
 
@@ -542,8 +559,8 @@ We push 108 on to the compilation stack `:S`.
                                              ^
                                              IP = 55
 
-:S      :: [112, 12, 86, 102, 14, 126, 90, 108 ]   (def. stack, compiled adrs)
-:RELADR :: [      2            8               ]   (rel. adrs at 2 and 8)
+:S      :: [112, 10, 86, 102,  6, 126, 90, 108 ]   (def. stack, compiled adrs)
+:RELADR :: [      1            4               ]   (rel. adrs at 2 and 8)
 :NAME   :: XNAME                                   (name of the word to be compiled)
 ```
 
@@ -554,14 +571,28 @@ Parser `:_P` shifts `;` from the input buffer and executes `;`.
 
 `;` can insert the compiled stack into the latest free section of memory at `MEMP`.
 Suppose the latest free section of memory starts at absolute address 80.
+
+The relative jumps (bytes ahead) remain
+(we do not convert relative jumps to absolute addresses).
+However, all values in the compiled word are pointers.
+So, if the relative jump value does not already exist in the dictionary
+and not already referenced in memory, we need to create the value in memory
+and then point to the value in memory.
+
 We pop `:RELADR` and sum the value of its corresponding `:S` location with `MEMP`.
-For example pop 8, the relative address at 8 in `:S` is 14.
-Replace 14 at 8 with (80 14 +), which is 94.
-Pop 2 from `:RELADR` corresponding to relative address 12 plus 80 is 92.
+For example pop index 4 has value 6.
+Whether we need to add 6 to the dictionary and memory anew, let us
+suppose value 6 is defined at address 74.
+We replace 6 at absolute memory address 88 (and 89) with pointer to address 74 (where value 6 is defined).
+
+Likewise, the next pop `:RELADR` is 10.
+If 10 is not already in dictionary and memory, then we must add it.
+Suppose value 10 is found at absolute memory address 72.
+We replace 10 at address 82 with 72 (the address of the value 10).
 
 Push address 0 (null) to `:S` to indicate the end of the word definition.
 Add "XNAME" and its definition
-`[112, 92, 86, 102, 94, 126, 90, 108, 0 ]` to the dictionary.
+`[112, 72, 86, 102, 74, 126, 90, 108, 0 ]` to the dictionary.
 The dictionary will set the word to point to address 80
 and will bump `MEMP` to 98
 (the next two free bytes after our final compiled address 96).
@@ -570,16 +601,21 @@ Empty `:S` and most other compilation stacks and temporary variables.
 ```
                ______       _______
 "XNAME" =  80  82  84   86  88   90  92   94  96    (absolute memory addresses)
-         [112, 92, 86, 102, 94, 126, 90, 108,  0]   (compiled address values)
+         [112, 72, 86, 102, 74, 126, 90, 108,  0]   (compiled address values)
                -+----       -+-----   ^    ^
                 |            |        |    |
                 +------------|--------+    |
-                             |             |
+                 * 72 = & 10 |             |
                              +-------------+
+                              * 74 = & 6
 ```
 
 ## Conclusion
 
+This has been re-edited to match actual implementation of the relative address jumps.
+The implementation works although the text could be clarified.
+
+The `input buffer` logic is not yet implemented as of last edit.
 The logic seems to work.
 I'd like to learn the ANS variables and whether there are better
 ways to do the same things.

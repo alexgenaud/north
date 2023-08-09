@@ -62,18 +62,13 @@ export default class Dictionary {
       addressArray.length,
     );
     const addressHeader = this.addWordData(word, dataHeader);
-
     let addressLocation = addressHeader + 2;
-    // TODO should be all in one call, set the value as the next address!
-    // and therefor colon word headers should be two bytes !!!
-    // TODO or the dictionary entry needs flags but not the data it is pointing to.
     dataHeader.setValue(addressLocation);
 
-    for (const i16address of addressArray) {
-      const retAdr = this.machine.write(
-        new Data(i16address, DataType.i16),
-        addressLocation,
-      );
+    // TODO we do not need to pass the addressArray as there is one global m.compile_rel_adrs
+    for (let index = 0; index < addressArray.length; index++) {
+      const i16address = addressArray[index];
+      this.machine.write(new Data(i16address, DataType.i16), addressLocation);
       addressLocation += 2;
     }
     return addressHeader;

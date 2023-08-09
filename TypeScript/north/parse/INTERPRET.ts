@@ -30,7 +30,11 @@ export const INTERPRET: Loadable = (ma: Machine): boolean => {
     }
   };
 
-  const exec_value = function (m: Machine, data: Data, prev_program_count: number) {
+  const exec_value = function (
+    m: Machine,
+    data: Data,
+    prev_program_count: number,
+  ) {
     const value = data.getValue();
     assertNonNull("EXEC value", value);
     if (data.isCoreFunc() && typeof value === "function") {
@@ -72,6 +76,7 @@ export const INTERPRET: Loadable = (ma: Machine): boolean => {
     }
     exec_value(m, data, adrOfInterpret);
   };
+
   const d = ma.dictionary;
   d.addI8("PARSE", 0);
   const adrOfInterpret = d.addCoreFunc("P_INTERPRET", parseINTERPRET);

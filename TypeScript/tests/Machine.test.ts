@@ -39,10 +39,10 @@ describe("Machine", () => {
     assertExecuteStack("   ", "");
   });
 
-  test('execute_bogus', () => {
+  test("execute_bogus", () => {
     expect(() => {
       machine.executeInputBuffer("BoGuS");
-    }).toThrow("BoGuS")
+    }).toThrow("BoGuS");
   });
 
   test("machine_execute_push", () => {
