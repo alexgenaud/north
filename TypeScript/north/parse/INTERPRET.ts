@@ -1,5 +1,5 @@
 import {
-  Mode,
+  CONDITIONAL_IGNORE_MODES,
   assertData,
   assertFuncIn,
   assertInt,
@@ -11,7 +11,6 @@ import Machine from "../Machine";
 import { Loadable, Func } from "../types";
 
 export const INTERPRET: Loadable = (ma: Machine): boolean => {
-  const CONDITIONAL_IGNORE_MODES = [Mode.IGNORE, Mode.BLOCK];
 
   const exec_colon_word = function (m: Machine, first_address: number): void {
     m.program_counter = first_address; // program counter
@@ -21,11 +20,6 @@ export const INTERPRET: Loadable = (ma: Machine): boolean => {
       if (address === 0) return;
       const data: Data = m.read(address);
       assertData("EXEC", data);
-      const mode: Mode = m.costack.peek();
-      if (CONDITIONAL_IGNORE_MODES.includes(mode) && !data.isConditionFunc()) {
-        // TODO COMPILED EXECUTED words should jump
-        continue;
-      }
       exec_value(m, data, m.program_counter);
     }
   };
@@ -61,9 +55,8 @@ export const INTERPRET: Loadable = (ma: Machine): boolean => {
       return;
     }
     const data: Data | null = m.dictionary.getAction(token);
-    const mode: Mode = m.costack.peek();
     if (
-      CONDITIONAL_IGNORE_MODES.includes(mode) &&
+      CONDITIONAL_IGNORE_MODES.includes(m.costack.peek()) &&
       (data == null || !data.isConditionFunc())
     ) {
       return;

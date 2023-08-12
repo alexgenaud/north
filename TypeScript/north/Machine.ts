@@ -4,7 +4,7 @@ import Dictionary from "../north/Dictionary";
 import Memory from "../north/Memory";
 import Stack from "../north/Stack";
 import { DataBlock, Loadable, Func } from "./types";
-import { assertNonNull, Mode } from "./Util";
+import { assertNonNull } from "./Util";
 
 export default class Machine {
   dictionary: Dictionary;
@@ -26,7 +26,6 @@ export default class Machine {
     this.relAdrStack = new Stack();
     this.program_counter = 0;
     this.inputBuffer = new Buffer();
-    this.costack.push(Mode.EXECUTE);
     this.compile_definition = null;
     this.compile_def_adrs = [];
   }

@@ -5,31 +5,24 @@ import { Loadable, Func } from "../types";
 export const Condition: Loadable = (ma: Machine): boolean => {
   const conditionIf: Func = function (m: Machine): void {
     const current = m.costack.peek();
-    if (current === Mode.IGNORE || current === Mode.BLOCK) {
-      m.costack.push(Mode.BLOCK);
-    } else if (current === Mode.COMPILE) {
-      m.costack.push(Mode.COMPILE);
-    } else if (current === Mode.EXECUTE) {
+    if (current == null || current === Mode.EXECUTE) {
       m.costack.push(m.opstack.pop() !== 0 ? Mode.EXECUTE : Mode.IGNORE);
+    } else { //  if (current === Mode.IGNORE || current === Mode.BLOCK) {
+      m.costack.push(Mode.BLOCK);
     }
   };
 
   const conditionElse: Func = function (m: Machine): void {
     const current = m.costack.peek();
     if (current === Mode.IGNORE) {
-      m.costack.toggle(Mode.EXECUTE);
+      m.costack.replace(Mode.EXECUTE);
     } else if (current === Mode.EXECUTE) {
-      m.costack.toggle(Mode.IGNORE);
+      m.costack.replace(Mode.IGNORE);
     }
   };
 
   const conditionThen: Func = function (m: Machine): void {
-    if (m.costack.peek() === Mode.COMPILE) {
-      throw new Error(
-        "Executed condition must be from EXECUTE or IGNORE but not COMPILE mode",
-      );
-    }
-    m.costack.pop(); // if EXECUTE else IGNORE else EXECUTE
+    m.costack.pop();
   };
 
   const compileIf: Func = function (m: Machine): void {

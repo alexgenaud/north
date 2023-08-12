@@ -1,4 +1,4 @@
-import { isInt, assert, Mode } from "../north/Util";
+import { isInt, assert } from "../north/Util";
 
 export default class Stack {
   private stack: (number | string)[];
@@ -13,14 +13,13 @@ export default class Stack {
     }
   }
 
-  push(value: number | string | Mode): void {
-    assert(
-      typeof value === "number" || typeof value === "string",
-      "Stack token must be a string or number",
-    );
+  replace(value: number | string): void {
+    this.stack[this.stack.length - 1] = value;
+  }
+
+  push(value: number | string): void {
     if (isInt(value)) {
       this.stack.push(Number(value));
-      //this.stack.push(parseInt(value, 10));
     } else {
       this.stack.push(value + "");
     }
@@ -43,11 +42,6 @@ export default class Stack {
       return this.stack.splice(this.stack.length + index, 1)[0];
     }
     return this.stack.splice(index, 1)[0];
-  }
-
-  toggle(next: Mode): void {
-    assert(Object.values(Mode).includes(next), "Must set transition mode");
-    this.stack[this.stack.length - 1] = next;
   }
 
   public peek(index = -1): any {

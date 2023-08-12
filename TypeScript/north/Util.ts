@@ -5,14 +5,12 @@ import Stack from "./Stack";
 import { DataType } from "./types";
 
 export enum Mode {
-  EXECUTE = 1,
-  COMPILE = 2,
   IGNORE = 3, // can be toggled with EXECUTE in same layer
   BLOCK = 4, // if parent is IGNORED then child layers are blocked
-  VARIABLE = 5, // set variable name with next token
-  CONSTANT = 6, // set constant name with next token, value from earlier
-  // maybe need COMMENTS
+  EXECUTE = 5,
 }
+
+export const CONDITIONAL_IGNORE_MODES = [Mode.IGNORE, Mode.BLOCK];
 
 export function isInt(token: any): boolean {
   if (typeof token === "number") {
