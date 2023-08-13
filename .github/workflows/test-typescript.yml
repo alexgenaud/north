@@ -2,7 +2,7 @@ name: Test TypeScript
 
 on:
   push:
-    branches: ["master", "dev"]
+    branches: ["x_master", "dev"]
 
 permissions:
   contents: read

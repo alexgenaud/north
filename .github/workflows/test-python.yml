@@ -2,7 +2,7 @@ name: Test Python
 
 on:
   push:
-    branches: ["master", "python"]
+    branches: ["x_dev", "python"]
 
 permissions:
   contents: read

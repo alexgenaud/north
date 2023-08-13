@@ -9,25 +9,31 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    target-branch: "dev"
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+    target-branch: "dev"
 
   - package-ecosystem: "github-actions"
     directory: "/TypeScript/"
     schedule:
       interval: "weekly"
+    target-branch: "dev"
   - package-ecosystem: "npm"
     directory: "/TypeScript/"
     schedule:
       interval: "weekly"
+    target-branch: "dev"
 
   - package-ecosystem: "github-actions"
     directory: "/Python/"
     schedule:
       interval: "weekly"
+    target-branch: "dev"
   - package-ecosystem: "pip"
-    directory: "/TypeScript/"
+    directory: "/Python/"
     schedule:
       interval: "weekly"
+    target-branch: "dev"
