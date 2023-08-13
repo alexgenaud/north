@@ -7,7 +7,8 @@ export const Condition: Loadable = (ma: Machine): boolean => {
     const current = m.costack.peek();
     if (current == null || current === Mode.EXECUTE) {
       m.costack.push(m.opstack.pop() !== 0 ? Mode.EXECUTE : Mode.IGNORE);
-    } else { //  if (current === Mode.IGNORE || current === Mode.BLOCK) {
+    } else {
+      //  if (current === Mode.IGNORE || current === Mode.BLOCK) {
       m.costack.push(Mode.BLOCK);
     }
   };

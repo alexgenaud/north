@@ -11,7 +11,6 @@ import Machine from "../Machine";
 import { Loadable, Func } from "../types";
 
 export const INTERPRET: Loadable = (ma: Machine): boolean => {
-
   const exec_colon_word = function (m: Machine, first_address: number): void {
     m.program_counter = first_address; // program counter
     for (; m.program_counter < Machine.UPPER_BOUND; m.program_counter += 2) {
