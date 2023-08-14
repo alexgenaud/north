@@ -1,14 +1,14 @@
 import Machine from "../../TypeScript/north/Machine";
-import { INTERPRET } from "../../TypeScript/north/parse/INTERPRET";
-import { COMPILE } from "../../TypeScript/north/parse/COMPILE";
-import { CONST } from "../../TypeScript/north/parse/CONST";
-import { VAR } from "../../TypeScript/north/parse/VAR";
-import { Condition } from "../../TypeScript/north/core/Condition";
-import { Jump } from "../../TypeScript/north/core/Jump";
 import { BasicArgOne } from "../../TypeScript/north/core/BasicArgOne";
 import { BasicArgTwo } from "../../TypeScript/north/core/BasicArgTwo";
-
+import { COMPILE } from "../../TypeScript/north/parse/COMPILE";
+import { CONST } from "../../TypeScript/north/parse/CONST";
+import { Condition } from "../../TypeScript/north/core/Condition";
 import { DataBlock, createUninitDataBlock } from "../../TypeScript/north/types";
+import { INTERPRET } from "../../TypeScript/north/parse/INTERPRET";
+import { Jump } from "../../TypeScript/north/core/Jump";
+import { Loop } from "../../TypeScript/north/core/Loop";
+import { VAR } from "../../TypeScript/north/parse/VAR";
 
 class Singleton {
   private static instance: Singleton;
@@ -41,8 +41,9 @@ class Singleton {
       COMPILE,
       CONST,
       VAR,
-      Condition,
       Jump,
+      Loop,
+      Condition,
       BasicArgOne,
       BasicArgTwo,
     ]);

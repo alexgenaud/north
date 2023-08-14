@@ -47,6 +47,12 @@ export const BasicArgTwo: Loadable = (ma: Machine): boolean => {
   d.addCoreFunc(">", (m: Machine) =>
     m.opstack.push(m.opstack.pop() < m.opstack.pop() ? 1 : 0),
   );
+  d.addCoreFunc("<=", (m: Machine) =>
+    m.opstack.push(m.opstack.pop() >= m.opstack.pop() ? 1 : 0),
+  );
+  d.addCoreFunc(">=", (m: Machine) =>
+    m.opstack.push(m.opstack.pop() <= m.opstack.pop() ? 1 : 0),
+  );
   d.addCoreFunc("OVER", (m: Machine) => m.opstack.push(m.opstack.peek(-2)));
   d.addCoreFunc("SWAP", (m: Machine) => m.opstack.push(m.opstack.pop(-2)));
   d.addCoreFunc("AND", (m: Machine) =>

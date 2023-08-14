@@ -19,6 +19,8 @@ export const INTERPRET: Loadable = (ma: Machine): boolean => {
       if (address === 0) return;
       const data: Data = m.read(address);
       assertData("EXEC", data);
+      //console.log("exec_value pc: " + m.program_counter +" address: " + address
+      //    +" value: " + (data.isFunc() ? JSON.stringify(data.dump()) : data.getValue() ));
       exec_value(m, data, m.program_counter);
     }
   };

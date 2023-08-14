@@ -1,3 +1,81 @@
+[ [North project](../../README.md) > [TS Machine](../README.md) > [Documentation](README.md) ]
+
+# Conditional IF ELSE THEN
+
+## Actual implementation (2023 Aug)
+
+Given the following compiled word `ISZ` ("is zero"):
+
+```
+: ISZ IF 0 ELSE 1 THEN ;
+```
+
+The following definition is produced (as of 2023 Aug)
+assuming the next available memory begins at address 2D (hex):
+
+```
+2D 2E 2F 30 31 32 33 34 35 36 37 38 39 3A 3B 3C 3D 3E 3F 40 41 HEX adr
+00 01 06 0A ISZ:7 30    12    2D    2F    11    2E    0        HEX val
+ 0  1  6 10       10    J=0   0     6     JMP   1     END      reference (decimal)
+```
+
+Addresses 2D to 30 define the literal i8 values: 0, 1, 6, 10 (0A hex).
+Addresses 31,32 contain the definition header
+(with word name "ISZ" and array length: 7), for human benefit,
+but with no technical significance at this time
+(likely to be refactored in the near future).
+Addresses 33,34 contain a pointer to decimal value 10 (at address 0x30).
+Addresses 35,36 contain a pointer to the native function `J=0`.
+Et cetera.
+
+Execution starts from address 33. Decimal 10 is pushed to the stack.
+
+J=0 is executed. J=0 consumes the previous stack item.
+If 0 then jump ahead 10 bytes (from address 33 to address 3D).
+Else continue (to address 37).
+
+If address 37 is executed (no previous jump),
+then values 0 and 6 are pushed to the stack.
+JMP is executed, jumping 6 bytes ahead (from address 39 to 3F)
+
+Else if address 3D is executed (the original else-false),
+then 1 is pushed to the stack.
+
+Address 3F is always executed. Value 0 (null) represents
+the closing `THEN` and end of or return from the simple function.
+
+## Interpretation (not compiled) IF ELSE THEN
+
+As of Aug 2023, when interpreting user input
+(as opposed to executing a compiled word definition),
+every word is read, linearly, word by word.
+Enums EXECUTE, IGNORE, and/or BLOCK may be pushed and popped
+to the control stack indicating whether the
+read word will be executed or ignored.
+
+If the `IF` clause is true, EXECUTE will be pushed to the control stack,
+then toggled to IGNORE at `ELSE`.
+
+However, if the `IF` clause is false, IGNORE will be pushed to the control stack,
+then toggled to EXECUTE at `ELSE`.
+
+Nested IF(ELSE)THEN blocks will be similarly interpretted.
+However, if IGNORE is already on the control stack,
+then a BLOCK enum
+will be pushed on to the control stack.
+Alternatively, if EXECUTE is already on the control stack,
+then another EXECUTE or IGNORE will be pushed depending
+on the truth of the nested condition.
+Finally, if BLOCK is already on the stack,
+then another BLOCK will be pushed for all inner conditional blocks.
+All `IF`, `ELSE`, `THEN` will be read and considered.
+All other words will be executed only if
+neither IGNORE nor BLOCK are on the control stack.
+
+This entire logic is likely to change in the future.
+Loops and conditional blocks will likely always be (anonymously)
+compiled, inspired by _Machine Forth_ and _Open Firware_.
+
 # Compilation of conditional words
 
 How to compile `: NEW_WORD IF ELSE THEN ;`

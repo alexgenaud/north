@@ -1,24 +1,53 @@
 # North ts, the Forth from the North, in TypeScript
 
-Web interface to a fully functional forth interpretter and runtime memory display.
+North module representing the Machine 'back-end' (while probably running locally in a browser).
+The Machine is no concerned with the view.
+The Machine accepts an input stream and updates its own model, consisting primarily of the Machine Memory,
+as well as other data structures
+(that may not yet be implemented in the Memory array, but should/will be in future versions).
 
-The North "forth machine" (found in /TypeScript/) is separated from the React view (found in the [project root](../README.md)).
-The machine is implemented in TypeScript. The view is implemented in Typescript, React, Vite, Tailwind CSS.
+The North "forth machine" (found in /TypeScript/)
+is separated from the React view (found in the [project root](../README.md)).
+The machine is implemented in "pure" TypeScript.
+The view is implemented in Typescript, React, Vite, Tailwind CSS.
+
+[Parent North project](../README.md) - Including TypeScript front-end, this back-end, and outdated Python implementation.
+Limited and scattered [TypeScript Machine implementation documentation](TypeScript/docs/README.md).
 
 ## Backlog
 
-- Type implied by address
+- Loops
+  - DO..LOOP
+  - BEGIN..UNTIL
+  - I, J, K
+  - ANS compliant version
+  - Optimised FOR, WHILE, DO
+- Type implied by address range
   - For example
   - 20-2F: Core (native) functions
   - 30-38: Core immediate
   - 39-3F: Core conditional
   - 40-5F: Colon word pointers to array of i16 addresses
   - globals such flag meanings, pointers to dictionaries, etc
+- Consider separating native from colon words address spaces
+  - To optimally support WASM function tables
+  - Protect critical code and variables
+- Consider lowest memory
+  - map to primitive integers such as address 0 to value 0, 1 to 1, 2 to 2, ... 10, ... 16?
+  - to protect immutable or unsafe core/native variables
+- Consider aggressive compilation
+  - Loops and conditionals always (anonymously) compiled
+  - 256 native words
+    - 8 bit references
+    - map to 32 bit WASM function table
+  - Several compilation parsers
+    - 8 bit addresses only or
+    - include strings and/or float or
+    - Mixed length
+    - LIT, call stack, ...
+    - May require strictly defined parser/return call stack
 - Strings
   - UTF-8 implied
-- LOOP, several loop types
-  - ANS compliant version
-  - Optimized FOR, WHILE, DO
 - More data structures as forth primitives
   - Convert between WASM 32-bit types and North i16 addresses.
   - i8, i16, LEB128, UTF-8, bigInt

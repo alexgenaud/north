@@ -3,6 +3,8 @@
 North is a forth implementation in many languages.
 This sub-project is written in Python.
 
+[Parent North project](../README.md) - Including TypeScript front- and back-end, and this Python implementation.
+
 ## Prerequisites
 
 I've only run this from Ubuntu bash (good luck elsewhere).

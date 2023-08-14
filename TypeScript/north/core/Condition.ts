@@ -35,7 +35,7 @@ export const Condition: Loadable = (ma: Machine): boolean => {
 
   const compileElse: Func = function (m: Machine): void {
     const prev_rel_adr_index = m.costack.pop(); // from IF
-    const rel_adr_index = m.compile_def_adrs.push(0) - 1; // jump-to address placeholder
+    const rel_adr_index = m.compile_def_adrs.push(0) - 1; // jump-to address placeholder (len - 1 = 0)
     m.costack.push(rel_adr_index);
     m.relAdrStack.push(rel_adr_index);
     m.compile_def_adrs.push(m.dictionary.getWordAddress("JMP") as number);

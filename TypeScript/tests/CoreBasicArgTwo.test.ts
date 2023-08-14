@@ -83,6 +83,58 @@ describe("core/BasicArgTwo", () => {
     assertExecutePop("-1 -2 >", 1);
   });
 
+  test("than_or_equal_to", () => {
+    assertExecutePop("0 0 >=", 1);
+    assertExecutePop("0 1 >=", 0);
+    assertExecutePop("1 0 >=", 1);
+    assertExecutePop("1 1 >=", 1);
+
+    assertExecutePop("10 10 >=", 1);
+    assertExecutePop("10 11 >=", 0);
+    assertExecutePop("11 10 >=", 1);
+    assertExecutePop("11 11 >=", 1);
+
+    assertExecutePop("0 0 <=", 1);
+    assertExecutePop("0 1 <=", 1);
+    assertExecutePop("1 0 <=", 0);
+    assertExecutePop("1 1 <=", 1);
+
+    assertExecutePop("10 10 <=", 1);
+    assertExecutePop("10 11 <=", 1);
+    assertExecutePop("11 10 <=", 0);
+    assertExecutePop("11 11 <=", 1);
+  });
+
+  test("neg_or_equal_to", () => {
+    assertExecutePop("0 0 >=", 1);
+    assertExecutePop("0 -1 >=", 1);
+    assertExecutePop("-1 0 >=", 0);
+    assertExecutePop("-1 -1 >=", 1);
+    assertExecutePop("1 -1 >=", 1);
+    assertExecutePop("-1 1 >=", 0);
+
+    assertExecutePop("-10 -10 >=", 1);
+    assertExecutePop("-10 -11 >=", 1);
+    assertExecutePop("-11 -10 >=", 0);
+    assertExecutePop("-11 -11 >=", 1);
+    assertExecutePop("11 -11 >=", 1);
+    assertExecutePop("-11 11 >=", 0);
+
+    assertExecutePop("0 0 <=", 1);
+    assertExecutePop("0 -1 <=", 0);
+    assertExecutePop("-1 0 <=", 1);
+    assertExecutePop("-1 -1 <=", 1);
+    assertExecutePop("1 -1 <=", 0);
+    assertExecutePop("-1 1 <=", 1);
+
+    assertExecutePop("-10 -10 <=", 1);
+    assertExecutePop("-10 -11 <=", 0);
+    assertExecutePop("-11 -10 <=", 1);
+    assertExecutePop("-11 -11 <=", 1);
+    assertExecutePop("11 -11 <=", 0);
+    assertExecutePop("-11 11 <=", 1);
+  });
+
   test("over", () => {
     assertExecuteStack("5 6 7 OVER", "5 6 7 6");
   });
