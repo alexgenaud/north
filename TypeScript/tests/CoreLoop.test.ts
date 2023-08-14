@@ -43,4 +43,23 @@ describe("CoreLoop", () => {
     assertExecutePop(": V BEGIN 9 1 UNTIL ; V", 9);
     assertExecuteStack(": W BEGIN 9 UNTIL ; W", "");
   });
+
+  test("do_loop_empty", () => {
+    assertExecuteStack(": DONOTHING 9 0 DO LOOP ; DONOTHING", "");
+  });
+
+  test("do_loop_three", () => {
+    assertExecuteStack(": THREE 3 0 DO 5 LOOP ; THREE", "5 5 5");
+  });
+
+  test("do_loop_three_i", () => {
+    assertExecuteStack(": THREE 3 0 DO I LOOP ; THREE", "0 1 2");
+  });
+
+  test("do_loop_i_j_k", () => {
+    assertExecuteStack(
+      ": ALL 2 0 DO 5 3 DO 8 6 DO I J K LOOP LOOP LOOP ; ALL",
+      "6 3 0 7 3 0 6 4 0 7 4 0 6 3 1 7 3 1 6 4 1 7 4 1",
+    );
+  });
 });

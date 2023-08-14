@@ -46,86 +46,47 @@ DO..LOOP also must be compiled (for now).
 It may be helpful to think of `M I DO X LOOP` in Forth
 as equivilent to `for (int i=I; i < M; i++) X;` in C.
 
-```
-    : INCREMENT DO DUP 1 + LOOP ;
-```
+The DO expects a LIMIT and INDEX on the stack.
+Forth `5 0 DO` is similar to `for (int I=0; I<5; I++)` in C.
+LIMIT and INDEX are popped and pushed onto the control stack
+so that they retain the same sequence order.
+This way, we can pop and increment INDEX in the `LOOP`
+function and only peek at the unchanging LIMIT on the control stack.
+We loop back as long as INDEX is less than LIMIT.
+When INDEX >= LIMIT, both are removed from the control stack
+and program continues after the loop.
 
-The example above expects three values on the stack.
-Suppose we wanted to generate `0 1 2 3 4` on
-the stack as in the BEGIN..UNTIL example,
-we could run `0 4 0 INCREMENT`.
+## Actual result (2023 Aug)
 
-Suppose our definition begins at address 68,
-the compiled `INCREMENT` definition
-might look like ("address of" `&` removed):
+User input definition:
 
-```
-68 69   70 71   72 73   74 75   76 77
->C      >C      DUP     1       +
+`: XX 2 0 DO 5 3 DO 8 6 DO I J K LOOP LOOP LOOP ;`
 
-78 79   80 81   82 83   84 85   86 87
-C>      DUP     C>      1       +
-
-88 89   90 91   92 93   94 95   96 97
-DUP     ROT     >=      -26      J=0
-
-98 99   100..1  102..3
-DROP    DROP    0
-```
-
-The top two values from 'the stack' `S` will be
-pushed to stack `C` and 'hidden' in the body of the loop.
-If the top two stack `S` values
-are `4 0` at the beginning of the DO..LOOP
-then `>C >C` will reverse their order on the control stack `C`.
-Popping the same values from `C` to `S` at the
-end of the DO..LOOP reverses them again.
-Except we complicate things with
-pop, duplicate, pop, increment, duplicate,
-rotate, and compare greater-than-or-equal.
-Step by step at the `DO` begining S=[.. 4 0] and C=[..].
-Then pop and push twice S=[..] to C=[.. 0 4].
-At the end of the `LOOP`: C=[.. 0] push to S=[.. 4].
-Duplicate S=[.. 4 4 ].
-Pop from C=[..] onto S=[.. 4 4 0].
-Increment S=[.. 4 4 1].
-Duplicate S=[.. 4 4 1 1].
-Rotate S=[.. 4 1 1 4].
-Compare greater-than-or-equal `>=`
-(1 is not >= 4, false=0), S=[.. 4 1 0].
-Consume 0 and relative address -26, .. since 0
-then jump (`J=0`) to back -26 addresses, S=[.. 4 1].
-Note that the top two values on the stack are almost
-as when we first began the DO..LOOP except 1 is incremented from 0.
-We'll repeat several times returning back to `DO`
-until S=[.. 4 4] when `DROP DROP` clears the stack `S`.
-
-Suppose the same pointers from BEGIN..UNTIL and additionally
-the number -26 is defined at address 44.
-`>C` (aka `C` or `S>C`) meaning "pop from 'the stack' `S`
-and push onto stack C") is defined at address 28.
-`C>` (aka `C>S`, meaning "pop from stack `C`
-and push onto 'the stack' S") is defined at address 30.
-Suppose `>=` and `ROT` and `DROP` are
-defined at addresses 32 and 34 and 36, respectively.
-The absolute address values of the
-compiled word definition might be as follows:
+Compiled definition in memory:
 
 ```
-28 28 20 41 22 30 20 30 41 22 20 34 32 44 26 36 36 40
+      address (hex)  3A 3B 3C 3D 3E 3F 40 41 42     adr (hex)
+        value (hex)  2  0  5  3  8  6 -1A-10 -6     val (hex)
+reference (decimal)  2  0  5  3  8  6 -26-16 -6     ref (dec)
+
+43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F 50 51 52 53 54 55 56 adr (hex)
+XX:19 3A    3B    14    3C    3D    14    3E    3F    14    val (hex)
+functn 2    0     DO    5     3     DO    8     6     DO    ref (dec)
+
+57 58 59 5A 5B 5C 5D 5E 5F 60 61 62 63 64 65 66 67 68 69 6A adr (hex)
+11    12    13    42    16    41    16    40    16    0     val (hex)
+I     J     K     -6    LOOP -16    LOOP -26    LOOP  END   ref (dec)
 ```
 
-However, most likley an optimized native version of `DO` will be referenced,
-represented by a single i16 address.
-Even more likely,
-the dozen compiled words at the end of the loop will be replaced
-with a single address pointing to an optimized native `LOOP` function.
-It will still require the relative jump address,
-but only -8 rather than -26.
+Diagram of back looping:
 
 ```
-68 69   70 71   72 73   74 75   76 77   78 79   80 81
-DO      DUP     1       +       -8      LOOP    0
+          _      _      _     __      ___      ___
+XX 2 0 DO 5 3 DO 8 6 DO I J K -6 LOOP -16 LOOP -26 LOOP END
+          ^      ^      ^      |       |        |
+          |      |      +------+       |        |
+          |      +---------------------+        |
+          +-------------------------------------+
 ```
 
 # Indices I J K
