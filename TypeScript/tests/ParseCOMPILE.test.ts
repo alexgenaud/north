@@ -84,17 +84,4 @@ describe("parse/COMPILE", () => {
     assertExecutePop(": PLUSTWO PLUSONE PLUSONE ; 1 PLUSTWO", 3);
     assertExecutePop(": PLUSTHREE PLUSTWO PLUSONE ; 4 PLUSTHREE", 7);
   });
-
-  /*
-    test('program_is_prime', () => {
-        assertExecuteStack("""
-            : IS_PRIME DUP 2 <= IF DROP 0 ELSE
-               DUP 3 <= IF DROP 1 ELSE
-                 DUP 2 1 + 3 DO
-                   DUP I MOD 0 = IF DROP 0 EXIT THEN
-                 LOOP THEN THEN ;
-            4 IS_PRIME
-            ""","[0]")
-    });
-    */
 });

@@ -248,4 +248,17 @@ describe("core/BasicArgTwo", () => {
       machine.executeInputBuffer("MOD");
     }).toThrow("non-zero");
   });
+
+  test("happy_2dup", () => {
+    assertExecuteStack("7 5 2DUP", "7 5 7 5");
+    assertExecuteStack("- + - 3 4 2DUP", "0 3 4 3 4");
+  });
+
+  test("happy_2over", () => {
+    assertExecuteStack("1 2 3 4 5 2OVER", "1 2 3 4 5 2 3");
+  });
+
+  test("happy_2swap", () => {
+    assertExecuteStack("1 2 3 4 5 2SWAP", "1 4 5 2 3");
+  });
 });
