@@ -62,4 +62,18 @@ describe("CoreLoop", () => {
       "6 3 0 7 3 0 6 4 0 7 4 0 6 3 1 7 3 1 6 4 1 7 4 1",
     );
   });
+
+  test("do_loop_fib", () => {
+    assertExecuteStack(
+      ": FIB 0 1 ROT 0 DO 2DUP + LOOP ; 9 FIB",
+      "0 1 1 2 3 5 8 13 21 34 55",
+    );
+  });
+
+  test("do_loosey_fib", () => {
+    assertExecuteStack(
+      ": LOOSEY 0 1 ROT 0 DO 2DUP + ROT DROP LOOP SWAP DROP ; 15 LOOSEY",
+      "987",
+    );
+  });
 });

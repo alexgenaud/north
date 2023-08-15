@@ -65,9 +65,24 @@ export const BasicArgTwo: Loadable = (ma: Machine): boolean => {
     m.opstack.push(m.opstack.pop() ^ m.opstack.pop()),
   );
   d.addCoreFunc("MOD", mod);
+  d.addCoreFunc("2DUP", (m: Machine) => {
+    m.opstack.push(m.opstack.peek(-2));
+    m.opstack.push(m.opstack.peek(-2));
+  });
 
   // 3 pop pop pops
   d.addCoreFunc("ROT", (m: Machine) => m.opstack.push(m.opstack.pop(-3)));
+
+  // 4 pop pop skip skip
+  d.addCoreFunc("2OVER", (m: Machine) => {
+    m.opstack.push(m.opstack.peek(-4));
+    m.opstack.push(m.opstack.peek(-4));
+  });
+
+  d.addCoreFunc("2SWAP", (m: Machine) => {
+    m.opstack.push(m.opstack.pop(-4)); // 1234 -> 2341
+    m.opstack.push(m.opstack.pop(-4)); // 2341 -> 3412
+  });
 
   return true;
 };

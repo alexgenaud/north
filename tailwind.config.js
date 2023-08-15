@@ -7,6 +7,13 @@ export default {
     },
   ],
   theme: {
+    fontSize: {
+      sm: ["0.8vw", "1.2vw"],
+      base: ["1vw", "1.5vw"],
+      lg: ["1.2vw", "1.8vw"],
+      word: ["1.4vw", "2.1vw"],
+      adr: ["1.8vw", "2.7vw"],
+    },
     extend: {
       gridTemplateColumns: {
         16: "repeat(16, minmax(0, 1fr))",

@@ -13,7 +13,6 @@ import { VAR } from "../../TypeScript/north/parse/VAR";
 class Singleton {
   private static instance: Singleton;
   public static getInstance(): Singleton {
-    console.log("Singleton.getInstance");
     if (Singleton.instance == null) {
       Singleton.instance = new Singleton();
     }
@@ -35,7 +34,6 @@ class Singleton {
   private forth = new Machine();
 
   private constructor() {
-    console.log("Singleton.constructor");
     this.forth.load([
       INTERPRET,
       COMPILE,
@@ -54,7 +52,6 @@ class Singleton {
   // actions that likley alter machine, memory, stacks
   //
   public executeInputBuffer(input: string) {
-    console.log("Singleton.executeInputBuffer");
     this.forth.executeInputBuffer(input);
     this.updateMemory();
     this.updateStacks();
@@ -133,13 +130,11 @@ class Singleton {
       if (od == null) {
         this.memoryChange = true;
         this.memory.push(...newMemory.slice(d));
-        console.log("Singleton.updateMemory add new data");
         break;
       }
       if (nd == null) {
         this.memoryChange = true;
         this.memory.splice(d);
-        console.log("Singleton.updateMemory remove data");
         break;
       }
       if (
@@ -151,14 +146,9 @@ class Singleton {
       ) {
         this.memoryChange = true;
         this.memory[d] = nd;
-        console.log(
-          "Singleton.updateMemory single change at new address: " + nd.address,
-        );
         continue;
       }
     }
-
-    if (!this.memoryChange) console.log("Singleton.updateMemory no change");
   }
 
   //
@@ -177,11 +167,6 @@ class Singleton {
     this.memoryChangeListeners.push(callback);
   }
   private notifyMemoryChange() {
-    console.log(
-      "Singleton.notifyMemoryChange to " +
-        this.memoryChangeListeners.length +
-        " listeners",
-    );
     this.memoryChangeListeners.forEach((listener) => listener());
   }
 
@@ -189,11 +174,6 @@ class Singleton {
     this.opStackChangeListeners.push(callback);
   }
   private notifyOpStackChange() {
-    console.log(
-      "Singleton.notifyOpStackChange to " +
-        this.opStackChangeListeners.length +
-        " listeners",
-    );
     this.opStackChangeListeners.forEach((listener) => listener());
   }
 
@@ -201,11 +181,6 @@ class Singleton {
     this.coStackChangeListeners.push(callback);
   }
   private notifyCoStackChange() {
-    console.log(
-      "Singleton.notifyCoStackChange to " +
-        this.coStackChangeListeners.length +
-        " listeners",
-    );
     this.coStackChangeListeners.forEach((listener) => listener());
   }
 }
